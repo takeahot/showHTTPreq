@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 env = os.environ
-URL_DATABASE = os.environ.get('DATABASE_URL') 
+URL_DATABASE = os.environ.get('DATABASE_URL').replace("s://", "sql://")
 
 print('url_database', URL_DATABASE)
 
