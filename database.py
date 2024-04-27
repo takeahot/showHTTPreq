@@ -13,7 +13,7 @@ connect_kwargs = dict(
     host=env['DATABASE_HOST'],
     database=env['DATABASE_NAME'],
 )
-if env['DATABASE_PORT']:
+if 'DATABASE_PORT' in env:
     connect_kwargs['port'] = env['DATABASE_PORT']
 URL_DATABASE = URL.create(
     'postgresql',
