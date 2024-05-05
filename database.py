@@ -19,7 +19,6 @@ URL_DATABASE = URL.create(
     'postgresql',
     **connect_kwargs
 )
-print('url_database', URL_DATABASE)
 
 engine = create_engine(URL_DATABASE)
 

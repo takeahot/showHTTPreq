@@ -45,6 +45,29 @@ async def read_question(question_id: int, db: db_dependency):
 
 # @app.post('')
 
-# app.get("/")
-# def read_root():
-#     return {"message" : "Hello from Koyeb"}
+@app.get("/")
+def read_root():
+    return {question: Ques}
+
+@app.get("/")
+
+@app.post("/")
+
+@app.put("/")
+
+@app.delete("/")
+
+@app.options("/")
+
+@app.head("/")
+
+@app.patch("/")
+
+GET: - This method is used to retrieve data from a server.
+POST: - This method is used to create new data on a server.
+PUT: - This method is used to update existing data on a server.
+DELETE: - This method is used to delete data from a server.
+OPTIONS: - This method is used to describe the communication options for the target resource.
+HEAD: - This method is used to retrieve the meta-data of a resource without the body.
+PATCH: - This method is used to apply partial modifications to a resource.
+TRACE: 
