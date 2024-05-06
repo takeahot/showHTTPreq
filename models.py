@@ -20,4 +20,8 @@ class Logs(Base):
 
     id = Column(Integer, unique=True, primary_key=True, index=True)
     timestamp = Column(String, index=True)
-    log = Column(String, index=True)
+    method = Column(String) 
+    headers = Column(String)
+    body = Column(String)
+    path_params = Column(String)
+    query_params = Column(String)
