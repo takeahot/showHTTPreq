@@ -64,9 +64,9 @@ async def write_request(request: Request, db: db_dependency):
     db.commit()
     db.refresh(db_logs)
     pprint.pp ({
-        # 'method': request.method, 
-        # "headers": repr(request.headers), 
-        # "body":await request.body(), 
+        'method': request.method, 
+        "headers": request.headers, 
+        "body":await request.body(), 
         "path_params": request.path_params, 
         "query_params": request.query_params
     })

@@ -20,7 +20,7 @@ URL_DATABASE = URL.create(
     **connect_kwargs
 )
 
-engine = create_engine(URL_DATABASE)
+engine = create_engine(URL_DATABASE, pool_pre_ping=True, pool_recycle=300)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
