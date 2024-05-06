@@ -67,7 +67,7 @@ async def write_request(request: Request, db: db_dependency):
         headers=json.dumps(request.headers.__dict__, cls=CustomJSONEncoder), 
         body=await request.body(),
         path_params=repr(request.path_params), 
-        query_params='kkk'#json.dumps(request.query_params.__dict__)
+        query_params=json.dumps(request.query_params.__dict__)
     )
     db.add(db_logs)
     db.commit()
