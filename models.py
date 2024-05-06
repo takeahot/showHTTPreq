@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, text
 from database import Base
 
 # class Questions(Base):
@@ -20,7 +20,7 @@ class Logs(Base):
 
     id = Column(Integer, unique=True, primary_key=True, index=True)
     timestamp = Column(String, index=True)
-    method = Column(String) 
+    httpmethod = Column(String) 
     headers = Column(String)
     body = Column(String)
     path_params = Column(String)

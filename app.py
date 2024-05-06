@@ -1,12 +1,21 @@
 from fastapi import FastAPI, HTTPException, Depends, Request, Body
 from typing import List, Annotated
 from pydantic import BaseModel
-import models, json, pprint, datetime
 from database import engine, SessionLocal
+import models, json, pprint, datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+# tableModel = models.Base.metadata.reflect(bind=engine,checkfirst=True)
+# tableModel = models.Base.metadata.drop_all(bind=engine)
+tableModel = models.Base.metadata.tables
+print(tableModel)
+
+with engine.connect() as conn:
+    result = conn.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'logs'"))
+    print(result.all())
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -54,11 +63,11 @@ async def write_request(request: Request, db: db_dependency):
     # return json.dump(Request.method)
     db_logs = models.Logs(
         timestamp= datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"), 
-        method=request.method, 
+        httpmethod=request.method, 
         headers=json.dumps(request.headers.__dict__, cls=CustomJSONEncoder), 
         body=await request.body(),
         path_params=repr(request.path_params), 
-        query_params=json.dumps(request.query_params.__dict__)
+        query_params='kkk'#json.dumps(request.query_params.__dict__)
     )
     db.add(db_logs)
     db.commit()
@@ -81,6 +90,8 @@ async def write_request(request: Request, db: db_dependency):
 @app.api_route('/list')
 async def show_requests(db: db_dependency):
     result = db.query(models.Logs).all()
+    # result = db.query(models.Logs).statement.columns.keys()
+    # result = tableModel
     if not result: 
         raise HTTPException(status_code=404, detail='Logs is not found')
     return result
