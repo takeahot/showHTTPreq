@@ -65,7 +65,7 @@ async def write_request(request: Request, db: db_dependency):
         timestamp= datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"), 
         httpmethod=request.method, 
         headers=json.dumps(request.headers.__dict__, cls=CustomJSONEncoder), 
-        body=(await request.body()).json(),
+        body=json.dumps(await request.json()),
         path_params=repr(request.path_params), 
         query_params=json.dumps(request.query_params.__dict__)
     )
@@ -75,14 +75,14 @@ async def write_request(request: Request, db: db_dependency):
     pprint.pp ({
         'method': request.method, 
         "headers": request.headers, 
-        "body":await request.body(), 
+        "body":await request.json(), 
         "path_params": request.path_params, 
         "query_params": request.query_params
     })
     return {
         'method': request.method, 
         "headers": request.headers, 
-        "body":await request.body(), 
+        "body":await request.json(), 
         "path_params": request.path_params, 
         "query_params": request.query_params
     }
