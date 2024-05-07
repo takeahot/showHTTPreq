@@ -101,3 +101,20 @@ async def clean_history(db: db_dependency):
     del_res = db.query(models.Logs).delete()
     db.commit()
     return  del_res
+
+@app.api_route('/present_casavi_body',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
+async def show_requests(db: db_dependency):
+
+    def immutableDictUpdate(dict1,dict2):
+        dict1.update(dict2)
+        return dict1
+
+    result = db.query(models.Logs).all()
+    # print(str(result[0].__dict__))
+    print(type(result))
+    result = list(map(lambda x: immutableDictUpdate(immutableDictUpdate(x.__dict__,json.loads(x.body)),x.payload) if 'payload' in x.body else x ,result))
+    # result = db.query(models.Logs).statement.columns.keys()
+    # result = tableModel
+    if not result: 
+        raise HTTPException(status_code=404, detail='Logs is not found')
+    return result
