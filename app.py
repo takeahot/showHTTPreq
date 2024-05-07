@@ -58,7 +58,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 #         db.add(db_choice)
 #     db.commit()
 
-@app.api_route('/')
+@app.api_route('/',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
 async def write_request(request: Request, db: db_dependency):
     # return json.dump(Request.method)
     db_logs = models.Logs(
@@ -87,7 +87,7 @@ async def write_request(request: Request, db: db_dependency):
         "query_params": request.query_params
     }
 
-@app.api_route('/list')
+@app.api_route('/list',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
 async def show_requests(db: db_dependency):
     result = db.query(models.Logs).all()
     # result = db.query(models.Logs).statement.columns.keys()
@@ -96,7 +96,7 @@ async def show_requests(db: db_dependency):
         raise HTTPException(status_code=404, detail='Logs is not found')
     return result
 
-@app.api_route('/clean')
+@app.api_route('/clean',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
 async def clean_history(db: db_dependency):
     del_res = db.query(models.Logs).delete()
     db.commit()
