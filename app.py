@@ -113,6 +113,13 @@ async def write_request(request: Request, db: db_dependency):
         db.refresh(db_response_logs)
 
         print('Request and response logged')
+        pprint(dict(
+                {'status_code':external_response.status_code},
+                **{
+                    'payload': {'text': external_response.text},
+                    'eventName': bodyObj['eventName'] + "_response"    
+                },
+            ))
 
     return {
         'method': request.method, 
