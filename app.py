@@ -85,8 +85,9 @@ async def write_request(request: Request, db: db_dependency):
     # Отправка запроса на внешний URL
         # Преобразование заголовков в словарь
         headers_dict = dict(request.headers)
-        # Удаление заголовка Content-Length
         headers_dict.pop('content-length', None)
+        headers_dict.pop('host', None)
+
         async with httpx.AsyncClient() as client:
             print(
                 dict({
@@ -104,21 +105,28 @@ async def write_request(request: Request, db: db_dependency):
                 + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
                 + bodyObj['eventName'],
                 headers=headers_dict,
-                # json=bodyObj
+                json=bodyObj
             )
+
+
+        response_data = dict()
+
+        if not (200 <= external_response.status_code < 300):
+            response_data['payload'] = {
+                'textError': f"data:text/html,{external_response.text}"
+            }
+        else: 
+            response_data = external_response.json()
+
+        response_data['status_code'] = external_response.status_code
+        response_data['eventName'] = bodyObj['eventName'] + "_response"
 
         # Сохранение ответа от внешнего URL в БД
         db_response_logs = models.Logs(
             timestamp= datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"), 
             httpmethod=request.method, 
             headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
-            body=json.dumps(dict(
-                {'status_code':external_response.status_code},
-                **{
-                    'payload': {'text': external_response.text},
-                    'eventName': bodyObj['eventName'] + "_response"    
-                },
-            )),
+            body=json.dumps(response_data),
             path_params=repr(request.path_params), 
             query_params=json.dumps(request.query_params.__dict__),
         )
@@ -127,13 +135,7 @@ async def write_request(request: Request, db: db_dependency):
         db.refresh(db_response_logs)
 
         print('Request and response logged')
-        print(dict(
-                {'status_code':external_response.status_code},
-                **{
-                    'payload': {'text': external_response.text},
-                    'eventName': bodyObj['eventName'] + "_response"    
-                },
-            ))
+        print(response_data)
 
     return {
         'method': request.method, 
