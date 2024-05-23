@@ -93,6 +93,7 @@ async def write_request(request: Request, db: db_dependency):
             timeout = httpx.Timeout(60.0, connect=20.0, read=60.0)
             async with httpx.AsyncClient() as client:
                 print(
+                    'query parameter for ELMA',
                     {
                         'method': request.method,
                         'url': "https://7isfa26wfvp4a.elma365.eu/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
