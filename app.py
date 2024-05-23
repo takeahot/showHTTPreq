@@ -89,26 +89,28 @@ async def write_request(request: Request, db: db_dependency):
             headers_dict.pop('content-length', None)
             headers_dict.pop('host', None)
 
-            timeout = httpx.Timeout(30.0, connect=10.0, read=30.0)
+            timeout = httpx.Timeout(60.0, connect=20.0, read=60.0)
             async with httpx.AsyncClient() as client:
                 print(
-                    dict({
+                    {
                         'method': request.method,
-                        'url': "https://7isfa26wfvp4a.elma365.eu/api/"  
-                        + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
-                        + bodyObj['eventName'],
-                        'headers': request.headers,
+                        'url': "https://7isfa26wfvp4a.elma365.eu/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
+                               + bodyObj['eventName'],
+                        'headers': headers_dict,
                         'json': bodyObj
-                    })
+                    }
                 )
-                external_response = await client.request(
-                    method=request.method,
-                    url="https://7isfa26wfvp4a.elma365.eu/api/"  
-                    + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
-                    + bodyObj['eventName'],
-                    headers=headers_dict,
-                    json=bodyObj
-                )
+                try:
+                    external_response = await client.request(
+                        method=request.method,
+                        url="https://7isfa26wfvp4a.elma365.eu/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
+                            + bodyObj['eventName'],
+                        headers=headers_dict,
+                        json=bodyObj
+                    )
+                except httpx.RequestError as exc:
+                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
 
 
             response_data = dict()
