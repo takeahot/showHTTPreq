@@ -85,7 +85,7 @@ async def write_request(request: Request, db: db_dependency):
     # Отправка запроса на внешний URL
         async with httpx.AsyncClient() as client:
             external_response = await client.request(
-                # method=request.method,
+                method=request.method,
                 url="https://7isfa26wfvp4a.elma365.eu/api/"  
                 + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
                 + bodyObj['eventName'],
