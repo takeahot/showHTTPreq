@@ -91,6 +91,7 @@ async def write_request(request: Request, db: db_dependency):
             headers_dict.pop('host', None)
 
             bodyObj['eventName'] = bodyObj['eventName'] + '_from_koyeb'
+            pprint.pprint(bodyObj)
             timeout = httpx.Timeout(60.0, connect=20.0, read=60.0)
             async with httpx.AsyncClient() as client:
                 print(
