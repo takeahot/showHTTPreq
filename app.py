@@ -83,7 +83,8 @@ async def write_request(request: Request, db: db_dependency):
         ]:
             print ('request got',str(bodyObj['eventName']))
         else:
-        # Отправка запроса на внешний URL
+            print('request got for resend', str(bodyObj['eventName']))
+            # Отправка запроса на внешний URL
             # Преобразование заголовков в словарь
             headers_dict = dict(request.headers)
             headers_dict.pop('content-length', None)
