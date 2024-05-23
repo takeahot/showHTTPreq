@@ -83,14 +83,28 @@ async def write_request(request: Request, db: db_dependency):
         print ('request got',str(bodyObj['eventName']))
     else:
     # Отправка запроса на внешний URL
+        # Преобразование заголовков в словарь
+        headers_dict = dict(request.headers)
+        # Удаление заголовка Content-Length
+        headers_dict.pop('content-length', None)
         async with httpx.AsyncClient() as client:
+            print(
+                dict({
+                    'method': request.method,
+                    'url': "https://7isfa26wfvp4a.elma365.eu/api/"  
+                    + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
+                    + bodyObj['eventName'],
+                    'headers': request.headers,
+                    'json': bodyObj
+                })
+            )
             external_response = await client.request(
                 method=request.method,
                 url="https://7isfa26wfvp4a.elma365.eu/api/"  
                 + "extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
                 + bodyObj['eventName'],
-                headers=request.headers,
-                json=bodyObj
+                headers=headers_dict,
+                # json=bodyObj
             )
 
         # Сохранение ответа от внешнего URL в БД
@@ -113,7 +127,7 @@ async def write_request(request: Request, db: db_dependency):
         db.refresh(db_response_logs)
 
         print('Request and response logged')
-        pprint(dict(
+        print(dict(
                 {'status_code':external_response.status_code},
                 **{
                     'payload': {'text': external_response.text},
