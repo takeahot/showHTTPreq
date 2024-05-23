@@ -80,7 +80,7 @@ async def write_request(request: Request, db: db_dependency):
         'ticket_comment_created',\
         'ticket_comment_updated'\
     ]:
-        print ('request got')
+        print ('request got',str(bodyObj['eventName']))
     else:
     # Отправка запроса на внешний URL
         async with httpx.AsyncClient() as client:
