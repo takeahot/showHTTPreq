@@ -98,10 +98,13 @@ async def write_request(request: Request, db: db_dependency):
             timestamp= datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"), 
             httpmethod=request.method, 
             headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
-            body=json.dumps(dict({\
-                'status_code':external_response.status_code},\
-                **{'payload': {'text': external_response.text}\
-            })),
+            body=json.dumps(dict(
+                {'status_code':external_response.status_code},
+                **{
+                    'payload': {'text': external_response.text},
+                    'eventName': bodyObj['eventName'] + "_response"    
+                },
+            )),
             path_params=repr(request.path_params), 
             query_params=json.dumps(request.query_params.__dict__),
         )
