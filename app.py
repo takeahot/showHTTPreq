@@ -115,6 +115,29 @@ async def write_request(request: Request, db: db_dependency):
                 except httpx.RequestError as exc:
                     print(f"An error occurred while requesting {exc.request.url!r}.")
                     raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
+            domen = 'https://morzhkzdhj3oi.elma365.eu/'
+            async with httpx.AsyncClient() as client:
+                print(
+                    'query parameter for ELMA',
+                    {
+                        'method': request.method,
+                        'url': domen + "/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
+                               + bodyObj['eventName'],
+                        'headers': headers_dict,
+                        'json': bodyObj
+                    }
+                )
+                try:
+                    external_response = await client.request(
+                        method=request.method,
+                        url= domen + "/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/"
+                            + bodyObj['eventName'],
+                        headers=headers_dict,
+                        json=bodyObj
+                    )
+                except httpx.RequestError as exc:
+                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
 
 
             response_data = dict()
