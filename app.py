@@ -195,7 +195,7 @@ async def clean_history(db: db_dependency):
     return  del_res
 
 @app.api_route('/present_casavi_body',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
-async def show_requests(db: db_dependency):
+async def show_requests_body(db: db_dependency):
 
     def immutableDictUpdate(dict1,dict2):
         dict1.update(dict2)
@@ -211,7 +211,7 @@ async def show_requests(db: db_dependency):
     return result
 
 @app.api_route('/present_casavi_body/{page_str}',methods=['GET','PUT','POST','DELETE','PATCH','HEAD','OPTIONS','TRACE','CONNECT'])
-async def show_requests(page_str, db: db_dependency):
+async def show_requests_page(page_str, db: db_dependency):
 
     pageSize = 1000
 
