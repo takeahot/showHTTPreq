@@ -63,7 +63,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                         )
                         external_response = await client.request(
                             method=request.method,
-                            url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
+                            url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName'].replace('_from_koyeb','')}",
                             headers=headers_dict,
                             json=bodyObj,
                             timeout=timeout
