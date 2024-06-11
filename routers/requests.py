@@ -39,9 +39,9 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                 'ticket_comment_created',
                 'ticket_comment_updated'
             ]:
-                print('Request received:', str(bodyObj['eventName']))
+                print('Request received:', str(bodyObj.get('payload')['eventName']))
             else:
-                print('Request received for resend:', str(bodyObj['eventName']))
+                print('Request received for resend:', str(bodyObj.get('payload')['eventName']))
 
                 headers_dict = dict(request.headers)
                 headers_dict.pop('content-length', None)
