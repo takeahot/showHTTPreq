@@ -4,6 +4,7 @@ from functools import reduce
 import crud, models, schemas
 from dependencies import get_db
 from typing import List
+import json
 
 router = APIRouter()
 

@@ -45,7 +45,6 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
             headers_dict.pop('content-length', None)
             headers_dict.pop('host', None)
 
-            bodyObj['eventName'] += '_from_koyeb'
             # pprint.pprint(bodyObj)
             timeout = httpx.Timeout(60.0, connect=20.0, read=60.0)
 
@@ -63,7 +62,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                         )
                         external_response = await client.request(
                             method=request.method,
-                            url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName'].replace('_from_koyeb','')}",
+                            url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
                             headers=headers_dict,
                             json=bodyObj,
                             timeout=timeout
