@@ -47,6 +47,9 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                 headers_dict.pop('content-length', None)
                 headers_dict.pop('host', None)
 
+                elma_tail = bodyObj['eventName'];
+                bodyObj = {**bodyObj,'eventName': f"{elma_tail}_from_koyeb_to_ELMA"}
+
                 for domain in domains:
                     async with httpx.AsyncClient() as client:
                         try:
@@ -54,21 +57,39 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                                 'query parameter for ELMA',
                                 {
                                     'method': request.method,
-                                    'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
+                                    'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
                                     'headers': headers_dict,
                                     'json': bodyObj
                                 }
                             )
                             external_response = await client.request(
                                 method=request.method,
-                                url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
+                                url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
                                 headers=headers_dict,
                                 json=bodyObj,
                             )
+                            db_request_logs = models.Logs(
+                                timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+                                httpmethod=request.method,
+                                headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
+                                body=json.dumps(bodyObj),
+                                path_params=repr(request.path_params),
+                                query_params=json.dumps(dict(request.query_params))
+                            )
+                            db.add(db_request_logs)
+                            db.commit()
+                            db.refresh(db_request_logs)
+
                             response_data = {}
                             if not (200 <= external_response.status_code < 300):
                                 response_data['payload'] = {
-                                    'textError': f"data:text/html,{external_response.text}"
+                                    'textError': f"data:text/html,{external_response.text}",
+                                    'reqest': {
+                                        'method': request.method,
+                                        'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
+                                        'headers': headers_dict,
+                                        'json': bodyObj
+                                    }
                                 }
                             else:
                                 response_data = external_response.json()
@@ -94,13 +115,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             print(f"An error occurred while requesting {exc.request.url!r}.")
                             raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
 
-            return {
-                'method': request.method,
-                "headers": request.headers,
-                "body": bodyObj,
-                "path_params": request.path_params,
-                "query_params": request.query_params
-            }
+            return response_data
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
