@@ -4,11 +4,16 @@ import pprint
 import datetime
 import httpx
 from sqlalchemy.orm import Session
-import crud, models, schemas
+import models
 from dependencies import get_db
 from utils import CustomJSONEncoder
 
 router = APIRouter()
+
+domains = [
+    "https://7isfa26wfvp4a.elma365.eu",
+    "https://morzhkzdhj3oi.elma365.eu"
+]
 
 @router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'])
 async def write_request(request: Request, db: Session = Depends(get_db)):
@@ -41,61 +46,56 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
             headers_dict.pop('host', None)
 
             bodyObj['eventName'] += '_from_koyeb'
-            pprint.pprint(bodyObj)
+            # pprint.pprint(bodyObj)
             timeout = httpx.Timeout(60.0, connect=20.0, read=60.0)
 
-            async with httpx.AsyncClient() as client:
-                try:
-                    external_response = await client.request(
-                        method=request.method,
-                        url=f"https://7isfa26wfvp4a.elma365.eu/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
-                        headers=headers_dict,
-                        json=bodyObj,
-                        timeout=timeout
-                    )
-                except httpx.RequestError as exc:
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
-                    raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
+            for domain in domains:
+                async with httpx.AsyncClient() as client:
+                    try:
+                        print(
+                            'query parameter for ELMA',
+                            {
+                                'method': request.method,
+                                'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
+                                'headers': headers_dict,
+                                'json': bodyObj
+                            }
+                        )
+                        external_response = await client.request(
+                            method=request.method,
+                            url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
+                            headers=headers_dict,
+                            json=bodyObj,
+                            timeout=timeout
+                        )
+                        response_data = {}
+                        if not (200 <= external_response.status_code < 300):
+                            response_data['payload'] = {
+                                'textError': f"data:text/html,{external_response.text}"
+                            }
+                        else:
+                            response_data = external_response.json()
 
-            domen = 'https://morzhkzdhj3oi.elma365.eu/'
-            async with httpx.AsyncClient() as client:
-                try:
-                    external_response = await client.request(
-                        method=request.method,
-                        url=f"{domen}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
-                        headers=headers_dict,
-                        json=bodyObj,
-                        timeout=timeout
-                    )
-                except httpx.RequestError as exc:
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
-                    raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
+                        response_data['status_code'] = external_response.status_code
+                        response_data['eventName'] = bodyObj['eventName'] + "_response"
 
-            response_data = {}
-            if not (200 <= external_response.status_code < 300):
-                response_data['payload'] = {
-                    'textError': f"data:text/html,{external_response.text}"
-                }
-            else:
-                response_data = external_response.json()
+                        db_response_logs = models.Logs(
+                            timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+                            httpmethod=request.method,
+                            headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
+                            body=json.dumps(response_data),
+                            path_params=repr(request.path_params),
+                            query_params=json.dumps(dict(request.query_params))
+                        )
+                        db.add(db_response_logs)
+                        db.commit()
+                        db.refresh(db_response_logs)
 
-            response_data['status_code'] = external_response.status_code
-            response_data['eventName'] = bodyObj['eventName'] + "_response"
-
-            db_response_logs = models.Logs(
-                timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-                httpmethod=request.method,
-                headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
-                body=json.dumps(response_data),
-                path_params=repr(request.path_params),
-                query_params=json.dumps(dict(request.query_params))
-            )
-            db.add(db_response_logs)
-            db.commit()
-            db.refresh(db_response_logs)
-
-            print('Request and response logged')
-            print(response_data)
+                        print('Request and response logged')
+                        print(response_data)
+                    except httpx.RequestError as exc:
+                        print(f"An error occurred while requesting {exc.request.url!r}.")
+                        raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
 
         return {
             'method': request.method,
