@@ -1,29 +1,22 @@
-# Создание файла routers/questions.py
-with open('routers/questions.py', 'w') as f:
-    f.write('''\
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-import models, schemas
-from dependencies import get_db
+import os
+import pathspec
 
-router = APIRouter()
+def load_gitignore(directory):
+    gitignore_path = os.path.join(directory, '.gitignore')
+    if os.path.exists(gitignore_path):
+        with open(gitignore_path, 'r') as f:
+            return pathspec.PathSpec.from_lines('gitwildmatch', f)
+    return None
 
-@router.get('/questions/{question_id}', response_model=schemas.Question)
-async def read_question(question_id: int, db: Session = Depends(get_db)):
-    result = db.query(models.Questions).filter(models.Questions.id == question_id).first()
-    if not result:
-        raise HTTPException(status_code=404, detail='Question not found')
-    return result
+# Пример использования функции
+directory = '/Users/anton/Documents/vs_projects/showHTTPreq/showHTTPreq/'
+spec = load_gitignore(directory)
 
-@router.post("/questions/", response_model=schemas.Question)
-async def create_question(question: schemas.QuestionCreate, db: Session = Depends(get_db)):
-    db_question = models.Questions(question_text=question.question_text)
-    db.add(db_question)
-    db.commit()
-    db.refresh(db_question)
-    for choice in question.choices:
-        db_choice = models.Choices(choice_text=choice.choice_text, is_correct=choice.is_correct, question_id=db_question.id)
-        db.add(db_choice)
-    db.commit()
-    return db_question
-''')
+if spec:
+    test_path = '/path/to/your/project/subdir/__pycache__'
+    if spec.match_file(test_path + '/'):  # добавляем слеш в конце
+        print(f'{test_path} matches .gitignore pattern')
+    else:
+        print(f'{test_path} does not match .gitignore pattern')
+else:
+    print('.gitignore not found or is empty')

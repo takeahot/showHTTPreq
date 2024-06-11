@@ -11,7 +11,7 @@ from utils import CustomJSONEncoder
 router = APIRouter()
 
 domains = [
-    "https://7isfa26wfvp4a.elma365.eu",
+    # "https://7isfa26wfvp4a.elma365.eu",
     "https://morzhkzdhj3oi.elma365.eu"
 ]
 
@@ -31,7 +31,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_logs)
 
-        if str(bodyObj.get('eventName')) not in [
+        if str(bodyObj.get('payload').get('eventName')) not in [
             'ticket_created',
             'ticket_updated',
             'ticket_comment_created',
