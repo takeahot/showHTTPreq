@@ -6,6 +6,8 @@ from sqlalchemy import text
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+tableModel = models.Base.metadata.tables
+print(tableModel)
 
 # Вывод схемы таблицы (для PostgreSQL или другой базы данных)
 with engine.connect() as conn:
