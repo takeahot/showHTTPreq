@@ -1,27 +1,9 @@
-from sqlalchemy import URL, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-import os, pprint
-from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
 
-load_dotenv()
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
-env = os.environ
-connect_kwargs = dict(
-    username=env['DATABASE_USER'],
-    password=env['DATABASE_PASSWORD'],
-    host=env['DATABASE_HOST'],
-    database=env['DATABASE_NAME'],
-)
-if 'DATABASE_PORT' in env:
-    connect_kwargs['port'] = env['DATABASE_PORT']
-URL_DATABASE = URL.create(
-    'postgresql',
-    **connect_kwargs
-)
-
-engine = create_engine(URL_DATABASE, pool_pre_ping=True, pool_recycle=300)
-
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
