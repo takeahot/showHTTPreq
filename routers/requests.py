@@ -64,7 +64,6 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                                 url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{bodyObj['eventName']}",
                                 headers=headers_dict,
                                 json=bodyObj,
-                                timeout=timeout
                             )
                             response_data = {}
                             if not (200 <= external_response.status_code < 300):
