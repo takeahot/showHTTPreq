@@ -33,15 +33,15 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(db_logs)
 
-            if str(bodyObj.get('payload').get('eventName')) not in [
+            if str(bodyObj.get('eventName')) not in [
                 'ticket_created',
                 'ticket_updated',
                 'ticket_comment_created',
                 'ticket_comment_updated'
             ]:
-                print('Request received:', str(bodyObj.get('payload')['eventName']))
+                print('Request received:', str(bodyObj['eventName']))
             else:
-                print('Request received for resend:', str(bodyObj.get('payload')['eventName']))
+                print('Request received for resend:', str(bodyObj['eventName']))
 
                 headers_dict = dict(request.headers)
                 headers_dict.pop('content-length', None)
