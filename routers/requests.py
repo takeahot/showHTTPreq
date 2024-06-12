@@ -64,12 +64,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                                     'json': bodyObj
                                 }
                             )
-                            external_response = await client.request(
-                                method=request.method,
-                                url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
-                                headers=headers_dict,
-                                json=bodyObj,
-                            )
+                            
                             db_request_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                                 httpmethod=request.method,
@@ -82,6 +77,12 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             db.commit()
                             db.refresh(db_request_logs)
 
+                            external_response = await client.request(
+                                method=request.method,
+                                url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
+                                headers=headers_dict,
+                                json=bodyObj,
+                            )
                             response_data = {}
                             if not (200 <= external_response.status_code < 300):
                                 response_data['payload'] = {
