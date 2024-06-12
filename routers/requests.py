@@ -39,7 +39,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
             'ticket_comment_updated'
         ]:
             print('Request received:', str(bodyObj['eventName']))
-            return bodyObj; 
+            return 'Request received:' + json.dumps(bodyObj)
         else:
             print('Request received for resend:', str(bodyObj['eventName']))
 
