@@ -112,7 +112,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             db.refresh(db_response_logs)
 
                             print('Request and response logged')
-                            print(response_data)
+                            print('response data: ', response_data)
                         except httpx.RequestError as exc:
                             print(f"An error occurred while requesting {exc.request.url!r}.")
                             raise HTTPException(status_code=500, detail=f"Request to external service failed: {str(exc)}")
