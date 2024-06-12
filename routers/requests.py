@@ -68,7 +68,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             db_request_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                                 httpmethod=request.method,
-                                headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
+                                headers=json.dumps(headers_dict, cls=CustomJSONEncoder),
                                 body=json.dumps(bodyObj),
                                 path_params=repr(request.path_params),
                                 query_params=json.dumps(dict(request.query_params))
