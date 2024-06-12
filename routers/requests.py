@@ -32,7 +32,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_logs)
 
-        if str(bodyObj.get('eventName')) not in [
+        if hasattr(bodyObj, 'get') and callable(getattr(bodyObj, 'get')) and str(bodyObj.get('eventName')) not in [
             'ticket_created',
             'ticket_updated',
             'ticket_comment_created',
