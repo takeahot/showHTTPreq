@@ -16,7 +16,7 @@ domains = [
     "https://morzhkzdhj3oi.elma365.eu"
 ]
 
-@router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'])
+@router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
 async def write_request(request: Request, db: Session = Depends(get_db)):
     try:
         bodyObj = await request.json()

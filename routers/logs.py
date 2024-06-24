@@ -24,7 +24,7 @@ async def delete_logs(db: Session = Depends(get_db)):
     crud.delete_logs(db)
     return {"message": "Logs deleted successfully"}
 
-@router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'])
+@router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
 async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
     pageSize = 1000
 
