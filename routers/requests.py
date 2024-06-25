@@ -16,7 +16,7 @@ domains = [
     "https://morzhkzdhj3oi.elma365.eu"
 ]
 
-@router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
+@router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'], operation_id="root_request")
 async def write_request(request: Request, db: Session = Depends(get_db)):
     try:
         bodyObj = await request.json()
@@ -47,8 +47,8 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
             headers_dict.pop('content-length', None)
             headers_dict.pop('host', None)
 
-            elma_tail = bodyObj['eventName'];
-            bodyObj = {**bodyObj,'eventName': f"{elma_tail}_from_koyeb_to_ELMA"}
+            elma_tail = bodyObj['eventName']
+            bodyObj = {**bodyObj, 'eventName': f"{elma_tail}_from_koyeb_to_ELMA"}
 
             response_datas = []
             for domain in domains:

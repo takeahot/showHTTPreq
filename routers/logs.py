@@ -8,34 +8,34 @@ import json
 
 router = APIRouter()
 
-@router.get("/logs", response_model=List[schemas.Log])
+@router.get("/logs", response_model=List[schemas.Log], operation_id="read_logs")
 async def read_logs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     logs = crud.get_logs(db, skip=skip, limit=limit)
     if not logs:
         raise HTTPException(status_code=404, detail="Logs not found")
     return logs
 
-@router.post("/logs", response_model=schemas.Log)
+@router.post("/logs", response_model=schemas.Log, operation_id="create_log")
 async def create_log(log: schemas.LogCreate, db: Session = Depends(get_db)):
     return crud.create_log(db=db, log=log)
 
-@router.delete("/logs")
+@router.delete("/logs", operation_id="delete_logs")
 async def delete_logs(db: Session = Depends(get_db)):
     crud.delete_logs(db)
     return {"message": "Logs deleted successfully"}
 
-@router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
+@router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET'], operation_id="logs_parsed_by_page")
 async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
     pageSize = 1000
 
     def immutableDictUpdate(dict1, dict2):
         dict1.update(dict2)
         return dict1
-
+    print('page_str', page_str)
     page = int(page_str)
-
+    print('page', page)
     dbanswer = db.query(models.Logs).filter(models.Logs.id <= (page * pageSize), models.Logs.id > ((page - 1) * pageSize)).all()
-
+    print('dbanswer')
     def flatDbAnswerItem(item):
         if 'payload' in item['body']:
             bodyUpped = immutableDictUpdate(item, json.loads(item['body']))
