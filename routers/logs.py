@@ -26,16 +26,23 @@ async def delete_logs(db: Session = Depends(get_db)):
 
 @router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET'], operation_id="logs_parsed_by_page")
 async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
-    pageSize = 1000
+    pageSize = 100
 
     def immutableDictUpdate(dict1, dict2):
         dict1.update(dict2)
         return dict1
+
     print('page_str', page_str)
     page = int(page_str)
     print('page', page)
+    
+    # Проверка данных в базе данных
     dbanswer = db.query(models.Logs).filter(models.Logs.id <= (page * pageSize), models.Logs.id > ((page - 1) * pageSize)).all()
-    print('dbanswer')
+    print('Количество записей на странице:', len(dbanswer))
+    
+    if not dbanswer:
+        raise HTTPException(status_code=404, detail='Logs not found')
+    
     def flatDbAnswerItem(item):
         if 'payload' in item['body']:
             bodyUpped = immutableDictUpdate(item, json.loads(item['body']))
@@ -45,6 +52,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
             return item
 
     unsortedResult = list(map(flatDbAnswerItem, [ans.__dict__ for ans in dbanswer]))
+    print('Количество преобразованных записей:', len(unsortedResult))
 
     def sortResultItem(item):
         return dict(sorted(item.items(), key=lambda answerItem: answerItem[0]))
@@ -55,4 +63,6 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
     if not result:
         raise HTTPException(status_code=404, detail='Logs not found')
+    
+    print('Формирование окончательного ответа')
     return result
