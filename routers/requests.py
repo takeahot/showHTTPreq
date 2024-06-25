@@ -16,13 +16,12 @@ domains = [
     "https://morzhkzdhj3oi.elma365.eu"
 ]
 
-@router.api_route('/', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'], operation_id="root_request")
-async def write_request(request: Request, db: Session = Depends(get_db)):
+async def handle_request(request: Request, db: Session, method: str):
     try:
         bodyObj = await request.json()
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-            httpmethod=request.method,
+            httpmethod=method,
             headers=json.dumps(dict(request.headers), cls=CustomJSONEncoder),
             body=json.dumps(bodyObj),
             path_params=repr(request.path_params),
@@ -58,7 +57,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             print(
                                 'query parameter for ELMA',
                                 {
-                                    'method': request.method,
+                                    'method': method,
                                     'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
                                     'headers': headers_dict,
                                     'json': bodyObj
@@ -67,7 +66,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             
                             db_request_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-                                httpmethod=request.method,
+                                httpmethod=method,
                                 headers=json.dumps(headers_dict, cls=CustomJSONEncoder),
                                 body=json.dumps(bodyObj),
                                 path_params=repr(request.path_params),
@@ -78,7 +77,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                             db.refresh(db_request_logs)
 
                             external_response = await client.request(
-                                method=request.method,
+                                method=method,
                                 url=f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
                                 headers=headers_dict,
                                 json=bodyObj,
@@ -88,7 +87,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
                                 response_data['payload'] = {
                                     'textError': f"data:text/html,{external_response.text}",
                                     'reqest': {
-                                        'method': request.method,
+                                        'method': method,
                                         'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
                                         'headers': headers_dict,
                                         'json': bodyObj
@@ -102,7 +101,7 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
 
                             db_response_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-                                httpmethod=request.method,
+                                httpmethod=method,
                                 headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
                                 body=json.dumps(response_data),
                                 path_params=repr(request.path_params),
@@ -122,3 +121,32 @@ async def write_request(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/', operation_id="root_request_get")
+async def write_request_get(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "GET")
+
+@router.put('/', operation_id="root_request_put")
+async def write_request_put(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "PUT")
+
+@router.post('/', operation_id="root_request_post")
+async def write_request_post(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "POST")
+
+@router.delete('/', operation_id="root_request_delete")
+async def write_request_delete(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "DELETE")
+
+@router.patch('/', operation_id="root_request_patch")
+async def write_request_patch(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "PATCH")
+
+@router.head('/', operation_id="root_request_head")
+async def write_request_head(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "HEAD")
+
+@router.options('/', operation_id="root_request_options")
+async def write_request_options(request: Request, db: Session = Depends(get_db)):
+    return await handle_request(request, db, "OPTIONS")
