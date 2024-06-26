@@ -31,14 +31,17 @@ async def handle_request(request: Request, db: Session, method: str):
         db.commit()
         db.refresh(db_logs)
 
-        if hasattr(bodyObj, 'get') and callable(getattr(bodyObj, 'get')) and str(bodyObj.get('eventName')) not in [
+        if not hasattr(bodyObj, 'get') or not callable(getattr(bodyObj, 'get')) or str(bodyObj.get('eventName')) not in [
             'ticket_created',
             'ticket_updated',
             'ticket_comment_created',
             'ticket_comment_updated'
         ]:
             print('Request received:', str(bodyObj['eventName']))
-            return 'Request received:' + json.dumps(bodyObj)
+            try:
+                return 'Request received:' + json.dumps(bodyObj)
+            except Exception as e:
+                return 'Request received not json:' + str(bodyObj)
         else:
             print('Request received for resend:', str(bodyObj['eventName']))
 

@@ -4,6 +4,7 @@ showHTTPreqENV/
 **/__pycache__/
 __pycache__/
 showHTTPreq.code-workspace
+logs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
