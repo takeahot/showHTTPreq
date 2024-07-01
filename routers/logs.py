@@ -102,12 +102,16 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
             for key, value in payloadUpped_dict.items():
                 logging.info(f'Ключ: {key}, Значение: {value}, Тип данных: {type(value)}')
 
-            return {key: json.JSONEncoder().default(value) if not isinstance(value, (str, int, float, bool)) else value
-                    for key, value in payloadUpped_dict.items()}
+            return {
+                key: json.dumps(value, default=str) if not isinstance(value, (str, int, float, bool)) else value
+                for key, value in payloadUpped_dict.items()
+            }
 
         else:
-            return {key: json.JSONEncoder().default(value) if not isinstance(value, (str, int, float, bool)) else value
-                    for key, value in item.items()}
+            return {
+                key: json.dumps(value, default=str) if not isinstance(value, (str, int, float, bool)) else value
+                for key, value in item.items()
+            }
 
     unsortedResult = []
     for ans in dbanswer:
@@ -141,7 +145,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
     processed_result = replace_newlines(result)
 
     # Проверка результатов перед записью
-    logging.info(f'Result before saving: {json.dumps(result, default=default_serializer, indent=4)}')
+    logging.info(f'Result before saving: {json.dumps(processed_result, default=default_serializer, indent=4)}')
 
     with open(response_log_file_path, "w", encoding="utf-8") as log_file:
         log_file.write(json.dumps(processed_result, indent=4, default=default_serializer))
