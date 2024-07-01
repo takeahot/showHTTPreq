@@ -22,14 +22,19 @@ logging.basicConfig(filename=log_file_path, level=logging.INFO,
                     format='%(asctime)s %(levelname)s: %(message)s')
 
 def default_serializer(obj):
-    logging.info(f'Serializing object: {obj}')
     if isinstance(obj, datetime):
         return obj.isoformat()
-    if isinstance(obj, str):
-        serialized_obj = obj.replace('\n', '\\u000A')
-        logging.info(f'Serialized string: {serialized_obj}')
-        return serialized_obj
     return str(obj)
+
+def replace_newlines(obj):
+    if isinstance(obj, str):
+        return obj.replace('\n', '\\u000A')
+    elif isinstance(obj, list):
+        return [replace_newlines(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: replace_newlines(value) for key, value in obj.items()}
+    else:
+        return obj
 
 @router.get("/logs", response_model=List[schemas.Log], operation_id="read_logs")
 async def read_logs(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
@@ -76,30 +81,33 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
         logging.info(json.dumps(row, default=default_serializer, indent=4))
     
     def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
-        logging.info(f'Обработка item: {json.dumps(item, default=default_serializer, indent=4)}')
-        
+        logging.info(f'Обработка item: {json.dumps(item, default=json.JSONEncoder().default, indent=4)}')
+
         # Логирование всех свойств item с их типами данных
         for key, value in item.items():
             logging.info(f'Ключ: {key}, Значение: {value}, Тип данных: {type(value)}')
-            
+
         if 'payload' in item['body']:
             logging.info(f'Найден payload в body: {item["body"]}')
-            
+
             bodyUpped = pmap(item).update(json.loads(item['body']))
             bodyUpped_dict = dict(bodyUpped)
-            logging.info(f'Результат после обновления bodyUpped: {json.dumps(bodyUpped_dict, default=default_serializer, indent=4)}')
-            
+            logging.info(f'Результат после обновления bodyUpped: {json.dumps(bodyUpped_dict, default=json.JSONEncoder().default, indent=4)}')
+
             payloadUpped = bodyUpped.update(bodyUpped['payload'])
             payloadUpped_dict = dict(payloadUpped)
-            logging.info(f'Результат после обновления payloadUpped: {json.dumps(payloadUpped_dict, default=default_serializer, indent=4)}')
-            
+            logging.info(f'Результат после обновления payloadUpped: {json.dumps(payloadUpped_dict, default=json.JSONEncoder().default, indent=4)}')
+
             # Логирование всех свойств после обновления payload
             for key, value in payloadUpped_dict.items():
                 logging.info(f'Ключ: {key}, Значение: {value}, Тип данных: {type(value)}')
-            
-            return payloadUpped_dict
+
+            return {key: json.JSONEncoder().default(value) if not isinstance(value, (str, int, float, bool)) else value
+                    for key, value in payloadUpped_dict.items()}
+
         else:
-            return item
+            return {key: json.JSONEncoder().default(value) if not isinstance(value, (str, int, float, bool)) else value
+                    for key, value in item.items()}
 
     unsortedResult = []
     for ans in dbanswer:
@@ -128,10 +136,16 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
     # Запись результата в файл для анализа
     response_log_file_path = os.path.join(log_dir, f"response_page_{page}.txt")
-    
+
+    # Обработка данных перед сериализацией
+    processed_result = replace_newlines(result)
+
+    # Проверка результатов перед записью
+    logging.info(f'Result before saving: {json.dumps(result, default=default_serializer, indent=4)}')
+
     with open(response_log_file_path, "w", encoding="utf-8") as log_file:
-        log_file.write(json.dumps(result, indent=4, default=default_serializer))
+        log_file.write(json.dumps(processed_result, indent=4, default=default_serializer))
     
     logging.info(f'Ответ записан в файл: {response_log_file_path}')
     
-    return json.loads(json.dumps(result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
