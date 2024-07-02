@@ -28,7 +28,7 @@ def default_serializer(obj):
 
 def replace_newlines(obj):
     if isinstance(obj, str):
-        return obj.replace('\n', '\\u000A')
+        return obj.replace('\n', '\\u000A').replace('"','""')
     elif isinstance(obj, list):
         return [replace_newlines(item) for item in obj]
     elif isinstance(obj, dict):
@@ -112,6 +112,9 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
                 key: json.dumps(value, default=str) if not isinstance(value, (str, int, float, bool)) else value
                 for key, value in item.items()
             }
+
+    # def sortAndFormatLogString(item: Dict[str, Any]) -> Dict[str, Any]:
+
 
     unsortedResult = []
     for ans in dbanswer:
