@@ -2,38 +2,42 @@
     display: grid;
     grid-template-columns: 200px 1fr;
     height: 100%;
+    width: 100%;
     gap: 10px;
-  }
-  
-  .sidebar {
+    overflow: hidden; /* Чтобы управлять прокруткой внутри дочерних элементов */
+}
+
+.sidebar {
     background-color: #f0f0f0;
     padding: 10px;
-  }
-  
-  .content {
+}
+
+.content {
     display: grid;
     grid-template-rows: auto 1fr auto;
     height: 100%;
-  }
-  
-  .top-bar {
+    width: 100%; /* Ограничиваем ширину до 100% контейнера */
+    overflow: hidden; /* Отключаем прокрутку на уровне контента */
+}
+
+.top-bar {
     display: flex;
     justify-content: space-between;
     padding: 10px;
     background-color: #f1f1f1;
-  }
-  
-  .refresh-group {
+}
+
+.refresh-group {
     display: flex;
     align-items: center;
     gap: 20px;
-  }
-  
-  .bottom-bar button {
-    margin-left: 0; /* Убедитесь, что отступ слева отсутствует */
-  }
+}
 
-  .popup {
+.bottom-bar button {
+    margin-left: 0; /* Убедитесь, что отступ слева отсутствует */
+}
+
+.popup {
     position: absolute;
     background-color: white;
     border: 1px solid #ccc;
@@ -43,62 +47,58 @@
     max-width: 300px;
     overflow: auto;
     word-wrap: break-word;
-  }
-  
-  .close-btn {
+}
+
+.close-btn {
     position: absolute;
     top: 5px;
     right: 10px;
     cursor: pointer;
     font-size: 18px;
     color: #888;
-  }
+}
 
-  .table-container {
+.table-container {
     width: 100%;
     position: relative;
-  }
-  
-  .log-table {
-    width: max-content;
-    border-spacing: 0;
-  }
-  
-  .bottom-bar {
-    display: flex;
-    justify-content: flex-start;
-    padding: 10px;
-    background-color: #f1f1f1;
-    text-align: left;
-    border-top: 1px solid #ddd;
-    width: 100%;
-    position: relative;
-    z-index: 4;
-  }
+}
 
-  .table-scroll-container {
+.table-container {
+    width: 100%; /* или другая желаемая ширина, например, 800px */
+    overflow-x: auto; /* Горизонтальная полоса прокрутки появится, если содержимое будет слишком широким */
+    overflow-y: hidden; /* Вертикальная полоса прокрутки, если она не нужна, можно скрыть */
+    max-width: 100%; /* Это ограничит ширину контейнера, чтобы она не превышала ширину родительского элемента */
+    box-sizing: border-box; /* Чтобы учесть padding и border внутри ширины */
     position: relative;
-    height: 20px; /* высота полосы прокрутки */
+}
+
+.table-scroll-container {
+    position: relative;
+    height: 20px; /* Высота скроллбара */
     overflow: hidden;
-  }
-  
-  .table-scroll-bar {
+    background-color: #f1f1f1;
+    margin-top: -20px; /* Поднимаем скроллбар под таблицу */
+}
+
+.table-scroll-bar {
     height: 100%;
-    overflow-x: auto;
+    width: 100%;
+    overflow-x: auto; /* Активируем горизонтальную прокрутку */
     overflow-y: hidden;
-  }
-  
-  .table-wrapper {
-    overflow-x: auto;
-    margin-bottom: -20px; /* чтобы не было двойного скролла */
-    padding-bottom: 20px; /* для места под полосу прокрутки */
-  }
-  
-  .sticky-scroll-bar {
+}
+
+.table-wrapper {
+    overflow-x: auto; /* Убираем горизонтальную прокрутку */
+    overflow-y: auto; /* Включаем вертикальную прокрутку */
+    margin-bottom: -20px; /* Это нужно, чтобы избежать двойной горизонтальной прокрутки */
+    padding-bottom: 20px; /* Пространство под горизонтальную полосу прокрутки */
+}
+
+.sticky-scroll-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
     background-color: #fff;
-  }
+}

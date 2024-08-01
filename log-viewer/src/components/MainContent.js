@@ -118,9 +118,6 @@ const MainContent = () => {
                     </div>
                 </div>
                 <div className="table-container">
-                    <div className="table-scroll-container">
-                        <div className="table-scroll-bar" ref={scrollBarContainerRef}></div>
-                    </div>
                     <div className="table-wrapper" ref={tableWrapperRef}>
                         <LogTable
                             logs={logs}
@@ -129,6 +126,9 @@ const MainContent = () => {
                             onCellClick={setLogs}
                             onColumnResizeStart={handleMouseDown}
                         />
+                    </div>
+                    <div className="table-scroll-container" ref={scrollBarContainerRef}>
+                        <div className="table-scroll-bar"></div>
                     </div>
                     <div className="bottom-bar" ref={bottomBarRef}>
                         <button onClick={handleLoadMore}>Load More Logs</button>
@@ -140,6 +140,3 @@ const MainContent = () => {
 };
 
 export default MainContent;
-
-
-

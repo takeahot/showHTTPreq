@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden; /* Убираем скроллинг за пределами контейнера */
+  max-width: 100%; /* Ограничиваем ширину */
 }
 
 .layout-header, .layout-footer {
@@ -14,14 +16,7 @@
 .layout-content {
   flex: 1;
   padding: 10px;
-}
-
-/* Основные стили для MainContent */
-.main-content {
-  display: grid;
-  grid-template-columns: 200px 1fr; /* Две колонки: 200px для боковой панели и оставшееся пространство для основного контента */
-  height: 100%; /* Высота, чтобы занять все доступное пространство */
-  gap: 10px;
+  overflow: hidden; /* Убирает скроллинг внутри layout-content */
 }
 
 .sidebar {
@@ -43,12 +38,6 @@
 
 .sidebar button:hover {
   background-color: #0056b3;
-}
-
-.content {
-  display: grid;
-  grid-template-rows: auto 1fr auto; /* Три строки: верхняя панель, таблица и нижняя панель */
-  height: 100%; /* Заполняет всё оставшееся пространство */
 }
 
 .top-bar {
@@ -103,11 +92,6 @@
 /* Стиль для слайдера */
 .log-table input[type="range"] {
   width: 100%;
-}
-
-.table-container {
-  display: flex;
-  flex-direction: column;
 }
 
 .table-header-cell {

@@ -1,6 +1,8 @@
 .log-table {
     display: grid;
     gap: 1px;
+    width: max-content; /* Ограничиваем ширину таблицы содержимым */
+    border-spacing: 0;
 }
 
 .log-table-header {
