@@ -13,6 +13,7 @@ const MainContent = () => {
     const [refreshInterval, setRefreshInterval] = useState(30); 
     const tableRef = useRef(null);
     const tableScrollBarRef = useRef(null);
+    const tableScrollContainerRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const bottomBarRef = useRef(null);
 
@@ -38,37 +39,36 @@ const MainContent = () => {
 
         updateScrollBarWidth();
 
-        const tableScrollBar = tableScrollBarRef.current;
+        const tableScrollContainer = tableScrollContainerRef.current;
         const tableWrapper = tableWrapperRef.current;
         const bottomBar = bottomBarRef.current;
 
-        if (tableScrollBar && tableWrapper && bottomBar) {
+        if (tableScrollContainer && tableWrapper && bottomBar) {
             const syncScroll = (source, target) => {
-                console.log()
                 target.scrollLeft = source.scrollLeft;
             };
 
-            const handleScrollBarScroll = () => syncScroll(tableScrollBar, tableWrapper);
-            const handleTableWrapperScroll = () => syncScroll(tableWrapper, tableScrollBar);
+            const handleTableScrollContainerScroll = () => syncScroll(tableScrollContainer, tableWrapper);
+            const handleTableWrapperScroll = () => syncScroll(tableWrapper, tableScrollContainer);
 
-            tableScrollBar.addEventListener('scroll', handleScrollBarScroll);
+            tableScrollContainer.addEventListener('scroll', handleTableScrollContainerScroll);
             tableWrapper.addEventListener('scroll', handleTableWrapperScroll);
 
             const updateScrollBarPosition = () => {
-                const scrollBarBottom = tableScrollBar.getBoundingClientRect().bottom;
+                const scrollBarBottom = tableScrollContainer.getBoundingClientRect().bottom;
                 const footerTop = bottomBar.getBoundingClientRect().top;
 
                 if (scrollBarBottom >= footerTop) {
-                    tableScrollBar.classList.add('sticky-scroll-bar');
+                    tableScrollContainer.classList.add('sticky-scroll-bar');
                 } else {
-                    tableScrollBar.classList.remove('sticky-scroll-bar');
+                    tableScrollContainer.classList.remove('sticky-scroll-bar');
                 }
             };
 
             window.addEventListener('scroll', updateScrollBarPosition);
 
             return () => {
-                tableScrollBar.removeEventListener('scroll', handleScrollBarScroll);
+                tableScrollContainer.removeEventListener('scroll', handleTableScrollContainerScroll);
                 tableWrapper.removeEventListener('scroll', handleTableWrapperScroll);
                 window.removeEventListener('scroll', updateScrollBarPosition);
             };
@@ -97,6 +97,7 @@ const MainContent = () => {
     };
 
     const handleLoadMore = () => {
+        // Логика для загрузки дополнительных строк
     };
 
     if (!columns.length || !logs.length) {
@@ -135,7 +136,7 @@ const MainContent = () => {
                             tableRef={tableRef} 
                         />
                     </div>
-                    <div className="table-scroll-container">
+                    <div className="table-scroll-container" ref={tableScrollContainerRef}>
                         <div
                             className="table-scroll-bar"
                             ref={tableScrollBarRef}
