@@ -59,14 +59,8 @@
 }
 
 .table-container {
-    width: 100%;
-    position: relative;
-}
-
-.table-container {
     width: 100%; /* или другая желаемая ширина, например, 800px */
     overflow-x: auto; /* Горизонтальная полоса прокрутки появится, если содержимое будет слишком широким */
-    overflow-y: hidden; /* Вертикальная полоса прокрутки, если она не нужна, можно скрыть */
     max-width: 100%; /* Это ограничит ширину контейнера, чтобы она не превышала ширину родительского элемента */
     box-sizing: border-box; /* Чтобы учесть padding и border внутри ширины */
     position: relative;
@@ -98,7 +92,7 @@
 }
 
 .sticky-scroll-bar {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;

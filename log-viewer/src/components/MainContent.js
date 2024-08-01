@@ -15,6 +15,7 @@ const MainContent = () => {
     const tableScrollBarRef = useRef(null);
     const tableScrollContainerRef = useRef(null);
     const tableWrapperRef = useRef(null);
+    const tableContainerRef = useRef(null);
     const bottomBarRef = useRef(null);
 
     useEffect(() => {
@@ -41,9 +42,10 @@ const MainContent = () => {
 
         const tableScrollContainer = tableScrollContainerRef.current;
         const tableWrapper = tableWrapperRef.current;
+        const tableContainer = tableContainerRef.current;
         const bottomBar = bottomBarRef.current;
 
-        if (tableScrollContainer && tableWrapper && bottomBar) {
+        if (tableScrollContainer && tableWrapper && tableContainer && bottomBar) {
             const syncScroll = (source, target) => {
                 target.scrollLeft = source.scrollLeft;
             };
@@ -56,21 +58,24 @@ const MainContent = () => {
 
             const updateScrollBarPosition = () => {
                 const scrollBarBottom = tableScrollContainer.getBoundingClientRect().bottom;
-                const footerTop = bottomBar.getBoundingClientRect().top;
+                const containerBottom = tableContainer.getBoundingClientRect().bottom;
 
-                if (scrollBarBottom >= footerTop) {
+                if (scrollBarBottom >= containerBottom) {
                     tableScrollContainer.classList.add('sticky-scroll-bar');
                 } else {
                     tableScrollContainer.classList.remove('sticky-scroll-bar');
                 }
             };
 
-            window.addEventListener('scroll', updateScrollBarPosition);
+            tableContainer.addEventListener('scroll', updateScrollBarPosition);
+
+            // Вызов функции для проверки позиции при инициализации
+            updateScrollBarPosition();
 
             return () => {
                 tableScrollContainer.removeEventListener('scroll', handleTableScrollContainerScroll);
                 tableWrapper.removeEventListener('scroll', handleTableWrapperScroll);
-                window.removeEventListener('scroll', updateScrollBarPosition);
+                tableContainer.removeEventListener('scroll', updateScrollBarPosition);
             };
         }
     }, [columns, logs]);
@@ -125,7 +130,7 @@ const MainContent = () => {
                         </label>
                     </div>
                 </div>
-                <div className="table-container">
+                <div className="table-container" ref={tableContainerRef}>
                     <div className="table-wrapper" ref={tableWrapperRef}>
                         <LogTable
                             logs={logs}
