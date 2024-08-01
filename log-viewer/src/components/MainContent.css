@@ -74,17 +74,20 @@
 
 .table-scroll-container {
     position: relative;
-    height: 20px; /* Высота скроллбара */
-    overflow: hidden;
+    height: 20px; 
+    overflow-x: auto; /* Включаем горизонтальную прокрутку */
+    overflow-y: hidden;
     background-color: #f1f1f1;
-    margin-top: -20px; /* Поднимаем скроллбар под таблицу */
+    margin-top: 0;
+    width: 100%; /* Ширина контейнера соответствует ширине родительского элемента */
 }
 
 .table-scroll-bar {
-    height: 100%;
+    min-height: 20px; /* Минимальная высота, чтобы предотвратить схлопывание */
     width: 100%;
-    overflow-x: auto; /* Активируем горизонтальную прокрутку */
+    overflow-x: auto;
     overflow-y: hidden;
+    box-sizing: border-box;
 }
 
 .table-wrapper {

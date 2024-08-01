@@ -10,56 +10,65 @@ const MainContent = () => {
     const [currentColIndex, setCurrentColIndex] = useState(null);
     const [startX, setStartX] = useState(0);
     const [startWidth, setStartWidth] = useState(0);
-    const [refreshInterval, setRefreshInterval] = useState(30); // Таймер автообновления
-    const scrollBarContainerRef = useRef(null);
+    const [refreshInterval, setRefreshInterval] = useState(30); 
+    const tableRef = useRef(null);
+    const tableScrollBarRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const bottomBarRef = useRef(null);
 
     useEffect(() => {
-        // Загрузка данных из JSON
         fetch('/exampleData.json')
             .then(response => response.json())
             .then(data => {
                 const colKeys = Object.keys(data[0] || {});
                 setColumns(colKeys);
-                setColWidths(colKeys.map(() => 150)); // Установим изначальную ширину для каждой колонки
-
+                setColWidths(colKeys.map(() => 150)); 
                 const logsWithoutHeaders = data.slice(1);
                 setLogs(logsWithoutHeaders);
             });
     }, []);
 
     useEffect(() => {
-        const scrollBar = scrollBarContainerRef.current;
+        const updateScrollBarWidth = () => {
+            if (tableRef.current && tableScrollBarRef.current) {
+                const tableWidth = tableRef.current.scrollWidth;
+                tableScrollBarRef.current.style.width = `${tableWidth}px`;
+            }
+        };
+
+        updateScrollBarWidth();
+
+        const tableScrollBar = tableScrollBarRef.current;
         const tableWrapper = tableWrapperRef.current;
         const bottomBar = bottomBarRef.current;
 
-        if (scrollBar && tableWrapper && bottomBar) {
+        if (tableScrollBar && tableWrapper && bottomBar) {
             const syncScroll = (source, target) => {
+                console.log()
                 target.scrollLeft = source.scrollLeft;
             };
 
-            const handleScrollBarScroll = () => syncScroll(scrollBar, tableWrapper);
-            const handleTableWrapperScroll = () => syncScroll(tableWrapper, scrollBar);
+            const handleScrollBarScroll = () => syncScroll(tableScrollBar, tableWrapper);
+            const handleTableWrapperScroll = () => syncScroll(tableWrapper, tableScrollBar);
 
-            scrollBar.addEventListener('scroll', handleScrollBarScroll);
+            tableScrollBar.addEventListener('scroll', handleScrollBarScroll);
             tableWrapper.addEventListener('scroll', handleTableWrapperScroll);
 
             const updateScrollBarPosition = () => {
-                const scrollBarBottom = scrollBar.getBoundingClientRect().bottom;
+                const scrollBarBottom = tableScrollBar.getBoundingClientRect().bottom;
                 const footerTop = bottomBar.getBoundingClientRect().top;
 
                 if (scrollBarBottom >= footerTop) {
-                    scrollBar.classList.add('sticky-scroll-bar');
+                    tableScrollBar.classList.add('sticky-scroll-bar');
                 } else {
-                    scrollBar.classList.remove('sticky-scroll-bar');
+                    tableScrollBar.classList.remove('sticky-scroll-bar');
                 }
             };
 
             window.addEventListener('scroll', updateScrollBarPosition);
 
             return () => {
-                scrollBar.removeEventListener('scroll', handleScrollBarScroll);
+                tableScrollBar.removeEventListener('scroll', handleScrollBarScroll);
                 tableWrapper.removeEventListener('scroll', handleTableWrapperScroll);
                 window.removeEventListener('scroll', updateScrollBarPosition);
             };
@@ -77,7 +86,7 @@ const MainContent = () => {
         if (isResizing && currentColIndex !== null) {
             const deltaX = event.clientX - startX;
             const newWidths = [...colWidths];
-            newWidths[currentColIndex] = Math.max(50, startWidth + deltaX); // Минимальная ширина 50px
+            newWidths[currentColIndex] = Math.max(50, startWidth + deltaX); 
             setColWidths(newWidths);
         }
     };
@@ -88,8 +97,6 @@ const MainContent = () => {
     };
 
     const handleLoadMore = () => {
-        // Логика для загрузки дополнительных строк
-        // Например, можно повторно загрузить данные из файла или получить данные с сервера
     };
 
     if (!columns.length || !logs.length) {
@@ -125,10 +132,15 @@ const MainContent = () => {
                             colWidths={colWidths}
                             onCellClick={setLogs}
                             onColumnResizeStart={handleMouseDown}
+                            tableRef={tableRef} 
                         />
                     </div>
-                    <div className="table-scroll-container" ref={scrollBarContainerRef}>
-                        <div className="table-scroll-bar"></div>
+                    <div className="table-scroll-container">
+                        <div
+                            className="table-scroll-bar"
+                            ref={tableScrollBarRef}
+                            style={{ width: tableRef.current ? `${tableRef.current.scrollWidth}px` : '100%' }}
+                        ></div>
                     </div>
                     <div className="bottom-bar" ref={bottomBarRef}>
                         <button onClick={handleLoadMore}>Load More Logs</button>
