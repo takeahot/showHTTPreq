@@ -1,0 +1,36 @@
+.log-table {
+    display: grid;
+    gap: 1px;
+}
+
+.log-table-header {
+padding: 8px;
+background-color: #ddd;
+font-weight: bold;
+text-align: center;
+position: relative;
+border: 1px solid #ddd;
+}
+
+.log-table-cell {
+padding: 8px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: normal;
+display: -webkit-box;
+-webkit-line-clamp: 3;
+-webkit-box-orient: vertical;
+line-clamp: 3;
+box-orient: vertical;
+border: 1px solid #ddd;
+background-color: #fff;
+}
+
+.resize-handle {
+position: absolute;
+right: 0;
+top: 0;
+bottom: 0;
+width: 5px;
+cursor: col-resize;
+}

@@ -1,0 +1,170 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.layout-header, .layout-footer {
+  background-color: #282c34;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+.layout-content {
+  flex: 1;
+  padding: 10px;
+}
+
+/* Основные стили для MainContent */
+.main-content {
+  display: grid;
+  grid-template-columns: 200px 1fr; /* Две колонки: 200px для боковой панели и оставшееся пространство для основного контента */
+  height: 100%; /* Высота, чтобы занять все доступное пространство */
+  gap: 10px;
+}
+
+.sidebar {
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background-color: #0056b3;
+}
+
+.content {
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* Три строки: верхняя панель, таблица и нижняя панель */
+  height: 100%; /* Заполняет всё оставшееся пространство */
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f1f1f1;
+  align-items: center; /* Центрируем по вертикали */
+}
+
+.slider-group,
+.refresh-group {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Расстояние между элементами */
+}
+
+.slider-group label,
+.refresh-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Расстояние между текстом и ползунком/вводом */
+}
+
+.log-table {
+  display: grid;
+  grid-auto-rows: minmax(auto, max-content); /* Автоматическая высота строк */
+  gap: 1px; /* Разделение между ячейками */
+}
+
+.log-table > div {
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal; /* Позволяем тексту переноситься на новую строку */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Ограничение на 3 строки */
+  -webkit-box-orient: vertical;
+  line-clamp: 3;
+  box-orient: vertical;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  word-wrap: break-word;
+  max-width: 100%; /* Ограничиваем ширину ячейки */
+}
+
+.log-table > div:hover {
+  cursor: pointer;
+  background-color: #f5f5f5;
+}
+
+/* Стиль для слайдера */
+.log-table input[type="range"] {
+  width: 100%;
+}
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-header-cell {
+  position: relative;
+  padding-right: 10px;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.table-header-cell:hover {
+  background-color: #e1e1e1;
+}
+
+.log-table-cell {
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Ограничение на 3 строки */
+  -webkit-box-orient: vertical;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+.bottom-bar {
+  padding: 10px;
+  background-color: #f1f1f1;
+  margin-top: 10px;
+  text-align: center;
+  border-top: 1px solid #ddd;
+}
+
+/* Стили для всплывающего окна */
+.popup {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-width: 300px;
+  overflow: auto;
+  word-wrap: break-word;
+}
+
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #888;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
