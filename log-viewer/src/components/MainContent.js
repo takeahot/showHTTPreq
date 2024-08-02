@@ -20,7 +20,7 @@ const MainContent = () => {
     const isSticky = useRef(false); // Флаг для отслеживания приклеенного состояния
 
     useEffect(() => {
-        fetch('/exampleData.json')
+        fetch('/logs_last_part')
             .then(response => response.json())
             .then(data => {
                 const colKeys = Object.keys(data[0] || {});

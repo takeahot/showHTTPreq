@@ -3,15 +3,13 @@ from sqlalchemy.orm import Session
 from aiolimiter import AsyncLimiter
 import json
 import os
-import pprint
 import datetime
 import httpx
 import models
 from dependencies import get_db
 from utils import CustomJSONEncoder
 from rate_limiter import limiter
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 router = APIRouter()
 
@@ -21,15 +19,15 @@ domains = [
 
 ALLOWED_BROWSERS = ["chrome", "opera", "firefox", "safari", "edge"]
 
-# Путь к уже смонтированным статическим файлам
-static_files_path = "/static"
+# Путь к папке static, где теперь лежат сгенерированные файлы React
+static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
 
 async def handle_request(request: Request, db: Session, method: str):
     try:
         user_agent = request.headers.get("User-Agent", "").lower()
         
-        # Проверка User-Agent и возврат index.html из смонтированных статических файлов
-        if any(browser in user_agent for browser in ["chrome", "opera", "firefox", "safari", "edge"]):
+        # Проверка User-Agent и возврат index.html
+        if any(browser in user_agent for browser in ALLOWED_BROWSERS):
             index_file_path = os.path.join(static_files_path, "index.html")
             return FileResponse(index_file_path, media_type="text/html")
 
@@ -47,20 +45,16 @@ async def handle_request(request: Request, db: Session, method: str):
         db.commit()
         db.refresh(db_logs)
 
-        if not hasattr(bodyObj, 'get') or not callable(getattr(bodyObj, 'get')) or str(bodyObj.get('eventName')) not in [
+        if not hasattr(bodyObj, 'get') or str(bodyObj.get('eventName')) not in [
             'ticket_created',
             'ticket_updated',
             'ticket_comment_created',
             'ticket_comment_updated'
         ]:
             print('Request received:', str(bodyObj['eventName']))
-            try:
-                return 'Request received:' + json.dumps(bodyObj)
-            except Exception as e:
-                return 'Request received not json:' + str(bodyObj)
-        else:
-            print('Request received for resend:', str(bodyObj['eventName']))
+            return 'Request received:' + json.dumps(bodyObj)
 
+        else:
             headers_dict = dict(request.headers)
             headers_dict.pop('content-length', None)
             headers_dict.pop('host', None)
@@ -73,16 +67,6 @@ async def handle_request(request: Request, db: Session, method: str):
                 async with limiter:
                     async with httpx.AsyncClient() as client:
                         try:
-                            print(
-                                'query parameter for ELMA',
-                                {
-                                    'method': method,
-                                    'url': f"{domain}/api/extensions/22fe87c3-14fc-4c97-83dd-52ef65fa4644/script/{elma_tail}",
-                                    'headers': headers_dict,
-                                    'json': bodyObj
-                                }
-                            )
-                            
                             db_request_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                                 httpmethod=method,

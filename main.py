@@ -17,8 +17,11 @@ app.add_middleware(
 )
 
 
-# Определяем путь к папке static
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+# Поднимаемся на один уровень вверх, чтобы выйти из папки main.py
+one_level_up = os.path.dirname(os.path.abspath(__file__))
+
+# Формируем путь к папке static
+static_path = os.path.join(one_level_up, "static")
 print("Path to static ----- ", static_path)
 
 # Подключаем статические файлы для React приложения
