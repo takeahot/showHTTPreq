@@ -16,9 +16,15 @@ app.add_middleware(
     allowed_hosts=["*"]
 )
 
+# Поднимаемся на один уровень вверх, чтобы выйти из папки main.py
+one_level_up = os.path.dirname(os.path.abspath(__file__))
 
-# Определяем путь к папке static
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+# Формируем путь к папке build внутри log-viewer
+react_build_path = os.path.join(one_level_up, "log-viewer", "build")
+print("Path to build ----- ", react_build_path)
+
+# Формируем путь к папке static внутри build
+static_path = os.path.join(react_build_path, "static")
 print("Path to static ----- ", static_path)
 
 # Подключаем статические файлы для React приложения

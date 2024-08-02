@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.orm import Session
 from aiolimiter import AsyncLimiter
 import json
+import os
 import pprint
 import datetime
 import httpx
@@ -9,6 +10,8 @@ import models
 from dependencies import get_db
 from utils import CustomJSONEncoder
 from rate_limiter import limiter
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 router = APIRouter()
 
@@ -16,8 +19,21 @@ domains = [
     "https://morzhkzdhj3oi.elma365.eu"
 ]
 
+ALLOWED_BROWSERS = ["chrome", "opera", "firefox", "safari", "edge"]
+
+# Путь к уже смонтированным статическим файлам
+static_files_path = "/static"
+
 async def handle_request(request: Request, db: Session, method: str):
     try:
+        user_agent = request.headers.get("User-Agent", "").lower()
+        
+        # Проверка User-Agent и возврат index.html из смонтированных статических файлов
+        if any(browser in user_agent for browser in ["chrome", "opera", "firefox", "safari", "edge"]):
+            index_file_path = os.path.join(static_files_path, "index.html")
+            return FileResponse(index_file_path, media_type="text/html")
+
+        # Продолжаем с обработкой логов и пересылкой запроса
         bodyObj = await request.json()
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -124,7 +140,6 @@ async def handle_request(request: Request, db: Session, method: str):
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get('/', operation_id="root_request_get")
 async def write_request_get(request: Request, db: Session = Depends(get_db)):

@@ -17,6 +17,7 @@ const MainContent = () => {
     const tableWrapperRef = useRef(null);
     const tableContainerRef = useRef(null);
     const bottomBarRef = useRef(null);
+    const isSticky = useRef(false); // Флаг для отслеживания приклеенного состояния
 
     useEffect(() => {
         fetch('/exampleData.json')
@@ -57,20 +58,28 @@ const MainContent = () => {
             tableWrapper.addEventListener('scroll', handleTableWrapperScroll);
 
             const updateScrollBarPosition = () => {
-                const scrollBarBottom = tableScrollContainer.getBoundingClientRect().bottom;
+                const scrollBarBottom = tableWrapper.getBoundingClientRect().bottom;
                 const containerBottom = tableContainer.getBoundingClientRect().bottom;
 
                 if (scrollBarBottom >= containerBottom) {
-                    tableScrollContainer.classList.add('sticky-scroll-bar');
+                    if (!isSticky.current) {
+                        tableScrollContainer.classList.add('sticky-scroll-bar');
+                        tableScrollContainer.style.position = 'fixed';
+                        tableScrollContainer.style.bottom = `${window.innerHeight - containerBottom}px`;
+                        isSticky.current = true;
+                    }
                 } else {
-                    tableScrollContainer.classList.remove('sticky-scroll-bar');
+                    if (isSticky.current) {
+                        tableScrollContainer.classList.remove('sticky-scroll-bar');
+                        tableScrollContainer.style.position = 'relative';
+                        tableScrollContainer.style.bottom = '0';
+                        isSticky.current = false;
+                    }
                 }
             };
 
             tableContainer.addEventListener('scroll', updateScrollBarPosition);
-
-            // Вызов функции для проверки позиции при инициализации
-            updateScrollBarPosition();
+            updateScrollBarPosition(); // Вызовем сразу для корректной начальной позиции
 
             return () => {
                 tableScrollContainer.removeEventListener('scroll', handleTableScrollContainerScroll);
