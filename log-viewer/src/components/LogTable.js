@@ -18,7 +18,7 @@ const LogTable = ({ logs, columns, colWidths, onCellClick, onColumnResizeStart, 
                     <div
                         key={`${rowIndex}-${colIndex}`}
                         className="log-table-cell"
-                        onClick={() => onCellClick(log[col])}
+                        onClick={(e) => onCellClick(log[col], e)}
                     >
                         {typeof log[col] === 'object' ? JSON.stringify(log[col]) : log[col]}
                     </div>

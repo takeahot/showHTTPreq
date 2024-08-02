@@ -11,16 +11,19 @@ const MainContent = () => {
     const [startX, setStartX] = useState(0);
     const [startWidth, setStartWidth] = useState(0);
     const [refreshInterval, setRefreshInterval] = useState(30);
+    const [popupContent, setPopupContent] = useState(null);
+    const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+
     const tableRef = useRef(null);
     const tableScrollBarRef = useRef(null);
     const tableScrollContainerRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const tableContainerRef = useRef(null);
     const bottomBarRef = useRef(null);
-    const isSticky = useRef(false); // Флаг для отслеживания приклеенного состояния
+    const popupRef = useRef(null); // Ref для всплывающего окна
+    const isSticky = useRef(false);
 
     useEffect(() => {
-        // Загрузка последних логов при инициализации
         fetch('/logs_last_part')
             .then(response => response.json())
             .then(data => {
@@ -35,20 +38,20 @@ const MainContent = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (logs.length > 0) {
-                const lastLogId = logs[logs.length - 1].id;
+                const lastLogId = logs[0].id; // Используем id самого верхнего лога в таблице
                 fetch(`/logs_after/${lastLogId}`)
                     .then(response => response.json())
                     .then(newLogs => {
-                        if (newLogs.length > 1) {  // Проверяем, есть ли новые логи
-                            setLogs(prevLogs => [...prevLogs, ...newLogs.slice(1)]); // Обновляем таблицу
+                        if (newLogs.length > 1) {
+                            setLogs(prevLogs => [...newLogs.slice(1), ...prevLogs]);
                         }
                     });
             }
         }, refreshInterval * 1000);
-
-        return () => clearInterval(intervalId); // Очистка интервала при размонтировании компонента
+    
+        return () => clearInterval(intervalId);
     }, [logs, refreshInterval]);
-
+    
     useEffect(() => {
         const updateScrollBarWidth = () => {
             if (tableRef.current && tableScrollBarRef.current) {
@@ -97,7 +100,7 @@ const MainContent = () => {
             };
 
             tableContainer.addEventListener('scroll', updateScrollBarPosition);
-            updateScrollBarPosition(); // Вызовем сразу для корректной начальной позиции
+            updateScrollBarPosition();
 
             return () => {
                 tableScrollContainer.removeEventListener('scroll', handleTableScrollContainerScroll);
@@ -130,15 +133,70 @@ const MainContent = () => {
 
     const handleLoadMore = () => {
         if (logs.length > 0) {
-            const firstLogId = logs[0].id;
+            const firstLogId = logs[logs.length - 1].id; // Используем id самого нижнего лога в таблице
             fetch(`/logs_before/${firstLogId}`)
                 .then(response => response.json())
                 .then(previousLogs => {
                     if (previousLogs.length > 1) {
-                        setLogs(prevLogs => [...previousLogs.slice(1), ...prevLogs]);
+                        setLogs(prevLogs => [...prevLogs, ...previousLogs.slice(1)]);
                     }
                 });
         }
+    };
+
+    const handleCellClick = (content, event) => {
+        const cellRect = event.target.getBoundingClientRect();
+        const popupWidth = 300; // Предполагаемая ширина всплывающего окна
+        const popupHeight = 150; // Предполагаемая высота всплывающего окна
+
+        let leftPosition = cellRect.left + window.scrollX;
+        let topPosition = cellRect.bottom + window.scrollY;
+
+        // Проверка, не выходит ли всплывающее окно за границы экрана
+        if (leftPosition + popupWidth > window.innerWidth) {
+            leftPosition = window.innerWidth - popupWidth - 10; // Сдвиг влево
+        }
+
+        if (topPosition + popupHeight > window.innerHeight) {
+            topPosition = cellRect.top + window.scrollY - popupHeight - 10; // Сдвиг вверх
+        }
+
+        setPopupContent(content);
+        setPopupPosition({
+            top: topPosition,
+            left: leftPosition,
+        });
+
+        // Обновляем позицию при каждом скролле таблицы
+        const handleScroll = () => {
+            const updatedRect = event.target.getBoundingClientRect();
+            let updatedLeftPosition = updatedRect.left + window.scrollX;
+            let updatedTopPosition = updatedRect.bottom + window.scrollY;
+
+            if (updatedLeftPosition + popupWidth > window.innerWidth) {
+                updatedLeftPosition = window.innerWidth - popupWidth - 10;
+            }
+
+            if (updatedTopPosition + popupHeight > window.innerHeight) {
+                updatedTopPosition = updatedRect.top + window.scrollY - popupHeight - 10;
+            }
+
+            setPopupPosition({
+                top: updatedTopPosition,
+                left: updatedLeftPosition,
+            });
+        };
+
+        tableContainerRef.current.addEventListener('scroll', handleScroll);
+
+        // Удаление обработчика событий при закрытии popup
+        return () => {
+            tableContainerRef.current.removeEventListener('scroll', handleScroll);
+        };
+    };
+
+    const handleClosePopup = () => {
+        setPopupContent(null);
     };
 
     if (!columns.length || !logs.length) {
@@ -172,9 +230,9 @@ const MainContent = () => {
                             logs={logs}
                             columns={columns}
                             colWidths={colWidths}
-                            onCellClick={setLogs}
+                            onCellClick={handleCellClick}
                             onColumnResizeStart={handleMouseDown}
-                            tableRef={tableRef} 
+                            tableRef={tableRef}
                         />
                     </div>
                     <div className="table-scroll-container" ref={tableScrollContainerRef}>
@@ -188,6 +246,26 @@ const MainContent = () => {
                         <button onClick={handleLoadMore}>Load More Logs</button>
                     </div>
                 </div>
+                {popupContent && (
+                    <div
+                        ref={popupRef}
+                        className="popup"
+                        style={{
+                            position: 'absolute',
+                            top: popupPosition.top,
+                            left: popupPosition.left,
+                            background: '#fff',
+                            border: '1px solid #ccc',
+                            padding: '10px',
+                            zIndex: 1000,
+                            maxWidth: '300px',
+                            overflow: 'auto',
+                        }}
+                    >
+                        <button onClick={handleClosePopup}>Close</button>
+                        <div>{popupContent}</div>
+                    </div>
+                )}
             </section>
         </div>
     );
