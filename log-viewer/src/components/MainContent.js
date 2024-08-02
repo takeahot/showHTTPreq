@@ -10,7 +10,7 @@ const MainContent = () => {
     const [currentColIndex, setCurrentColIndex] = useState(null);
     const [startX, setStartX] = useState(0);
     const [startWidth, setStartWidth] = useState(0);
-    const [refreshInterval, setRefreshInterval] = useState(30); 
+    const [refreshInterval, setRefreshInterval] = useState(30);
     const tableRef = useRef(null);
     const tableScrollBarRef = useRef(null);
     const tableScrollContainerRef = useRef(null);
@@ -20,6 +20,7 @@ const MainContent = () => {
     const isSticky = useRef(false); // Флаг для отслеживания приклеенного состояния
 
     useEffect(() => {
+        // Загрузка последних логов при инициализации
         fetch('/logs_last_part')
             .then(response => response.json())
             .then(data => {
@@ -30,6 +31,23 @@ const MainContent = () => {
                 setLogs(logsWithoutHeaders);
             });
     }, []);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (logs.length > 0) {
+                const lastLogId = logs[logs.length - 1].id;
+                fetch(`/logs_after/${lastLogId}`)
+                    .then(response => response.json())
+                    .then(newLogs => {
+                        if (newLogs.length > 1) {  // Проверяем, есть ли новые логи
+                            setLogs(prevLogs => [...prevLogs, ...newLogs.slice(1)]); // Обновляем таблицу
+                        }
+                    });
+            }
+        }, refreshInterval * 1000);
+
+        return () => clearInterval(intervalId); // Очистка интервала при размонтировании компонента
+    }, [logs, refreshInterval]);
 
     useEffect(() => {
         const updateScrollBarWidth = () => {
@@ -111,7 +129,16 @@ const MainContent = () => {
     };
 
     const handleLoadMore = () => {
-        // Логика для загрузки дополнительных строк
+        if (logs.length > 0) {
+            const firstLogId = logs[0].id;
+            fetch(`/logs_before/${firstLogId}`)
+                .then(response => response.json())
+                .then(previousLogs => {
+                    if (previousLogs.length > 1) {
+                        setLogs(prevLogs => [...previousLogs.slice(1), ...prevLogs]);
+                    }
+                });
+        }
     };
 
     if (!columns.length || !logs.length) {
