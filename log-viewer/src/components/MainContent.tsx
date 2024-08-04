@@ -21,6 +21,7 @@ const MainContent: React.FC = () => {
     const [startX, setStartX] = useState<number>(0);
     const [startWidth, setStartWidth] = useState<number>(0);
     const [refreshInterval, setRefreshInterval] = useState<number>(30);
+    const [lastUpdated, setLastUpdated] = useState<string>(''); // Добавлено состояние для времени последнего обновления
     const [popupContent, setPopupContent] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<PopupPosition>({ top: 0, left: 0 });
 
@@ -42,6 +43,7 @@ const MainContent: React.FC = () => {
                 setColWidths(colKeys.map(() => 150)); 
                 const logsWithoutHeaders = data.slice(1);
                 setLogs(logsWithoutHeaders);
+                setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
             });
     }, []);
 
@@ -54,6 +56,7 @@ const MainContent: React.FC = () => {
                     .then(newLogs => {
                         if (newLogs.length > 1) {
                             setLogs(prevLogs => [...newLogs.slice(1), ...prevLogs]);
+                            setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
                         }
                     });
             }
@@ -176,6 +179,7 @@ const MainContent: React.FC = () => {
                 .then(previousLogs => {
                     if (previousLogs.length > 1) {
                         setLogs(prevLogs => [...prevLogs, ...previousLogs.slice(1)]);
+                        setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
                     }
                 });
         }
@@ -183,7 +187,6 @@ const MainContent: React.FC = () => {
 
     const handleCellClick = (content: any, event: React.MouseEvent<HTMLDivElement>) => {
         try {
-            // Проверяем, является ли target HTMLDivElement
             if (!(event.target instanceof HTMLDivElement)) {
                 return;
             }
@@ -213,7 +216,6 @@ const MainContent: React.FC = () => {
             });
 
             const handleScroll = () => {
-                // Проверяем, является ли target HTMLDivElement
                 if (!(event.target instanceof HTMLDivElement)) {
                     return;
                 }
@@ -273,6 +275,9 @@ const MainContent: React.FC = () => {
                                 onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
                             />
                         </label>
+                    </div>
+                    <div className="last-updated">
+                        Last updated: {lastUpdated}
                     </div>
                 </div>
                 <div className="table-container" ref={tableContainerRef}>

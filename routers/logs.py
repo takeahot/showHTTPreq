@@ -229,7 +229,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
 @router.get("/logs_last_part", operation_id="logs_last_part")
 async def logs_last_part(db: Session = Depends(get_db)):
-    pageSize = 20
+    pageSize = 50
 
     columns = models.Logs.__table__.columns.keys()
 
