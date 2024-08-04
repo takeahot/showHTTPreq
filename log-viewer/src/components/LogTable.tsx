@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { FC } from 'react';
 import './LogTable.css';
 
-const LogTable = ({ logs, columns, colWidths, onCellClick, onColumnResizeStart, tableRef }) => {
+interface LogTableProps {
+    logs: Array<{ [key: string]: any }>;
+    columns: string[];
+    colWidths: number[];
+    onCellClick: (content: any, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onColumnResizeStart: (index: number, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    tableRef: React.RefObject<HTMLDivElement>;
+}
+
+const LogTable: FC<LogTableProps> = ({ logs, columns, colWidths, onCellClick, onColumnResizeStart, tableRef }) => {
     return (
-        <div ref={tableRef} className="log-table" style={{ gridTemplateColumns: colWidths.map(width => `${width}px`).join(' ') }}>
+        <div
+            ref={tableRef}
+            className="log-table"
+            style={{ gridTemplateColumns: colWidths.map(width => `${width}px`).join(' ') }}
+        >
             {columns.map((col, colIndex) => (
                 <div key={`header-${colIndex}`} className="log-table-header">
                     {col}
@@ -13,7 +26,7 @@ const LogTable = ({ logs, columns, colWidths, onCellClick, onColumnResizeStart, 
                     />
                 </div>
             ))}
-            {logs.map((log, rowIndex) => (
+            {logs.map((log, rowIndex) =>
                 columns.map((col, colIndex) => (
                     <div
                         key={`${rowIndex}-${colIndex}`}
@@ -23,7 +36,7 @@ const LogTable = ({ logs, columns, colWidths, onCellClick, onColumnResizeStart, 
                         {typeof log[col] === 'object' ? JSON.stringify(log[col]) : log[col]}
                     </div>
                 ))
-            ))}
+            )}
         </div>
     );
 };

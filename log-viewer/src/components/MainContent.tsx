@@ -2,26 +2,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import LogTable from './LogTable';
 import './MainContent.css';
 
-const MainContent = () => {
-    const [logs, setLogs] = useState([]);
-    const [columns, setColumns] = useState([]);
-    const [colWidths, setColWidths] = useState([]);
-    const [isResizing, setIsResizing] = useState(false);
-    const [currentColIndex, setCurrentColIndex] = useState(null);
-    const [startX, setStartX] = useState(0);
-    const [startWidth, setStartWidth] = useState(0);
-    const [refreshInterval, setRefreshInterval] = useState(30);
-    const [popupContent, setPopupContent] = useState(null);
-    const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+interface LogEntry {
+    id: number;
+    [key: string]: any; // Для остальных полей, которые могут быть в объекте
+}
 
-    const tableRef = useRef(null);
-    const tableScrollBarRef = useRef(null);
-    const tableScrollContainerRef = useRef(null);
-    const tableWrapperRef = useRef(null);
-    const tableContainerRef = useRef(null);
-    const bottomBarRef = useRef(null);
-    const popupRef = useRef(null); 
-    const isSticky = useRef(false);
+interface PopupPosition {
+    top: number;
+    left: number;
+}
+
+const MainContent: React.FC = () => {
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [columns, setColumns] = useState<string[]>([]);
+    const [colWidths, setColWidths] = useState<number[]>([]);
+    const [isResizing, setIsResizing] = useState<boolean>(false);
+    const [currentColIndex, setCurrentColIndex] = useState<number | null>(null);
+    const [startX, setStartX] = useState<number>(0);
+    const [startWidth, setStartWidth] = useState<number>(0);
+    const [refreshInterval, setRefreshInterval] = useState<number>(30);
+    const [popupContent, setPopupContent] = useState<string | null>(null);
+    const [popupPosition, setPopupPosition] = useState<PopupPosition>({ top: 0, left: 0 });
+
+    const tableRef = useRef<HTMLDivElement | null>(null);
+    const tableScrollBarRef = useRef<HTMLDivElement | null>(null);
+    const tableScrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const tableWrapperRef = useRef<HTMLDivElement | null>(null);
+    const tableContainerRef = useRef<HTMLDivElement | null>(null);
+    const bottomBarRef = useRef<HTMLDivElement | null>(null);
+    const popupRef = useRef<HTMLDivElement | null>(null);
+    const isSticky = useRef<boolean>(false);
 
     useEffect(() => {
         fetch('/logs_last_part')
@@ -58,13 +68,11 @@ const MainContent = () => {
         const tableScrollContainer = tableScrollContainerRef.current;
 
         if (tableContainer && tableWrapper && tableScrollContainer) {
-            const handleWheel = (event) => {
+            const handleWheel = (event: WheelEvent) => {
                 if (event.target === tableScrollContainer) {
-                    // Горизонтальная прокрутка, если мышь над горизонтальной полосой прокрутки
                     tableWrapper.scrollLeft += event.deltaY;
                     event.preventDefault();
                 } else {
-                    // Вертикальная прокрутка в области таблицы
                     tableWrapper.scrollTop += event.deltaY;
                 }
             };
@@ -93,7 +101,7 @@ const MainContent = () => {
         const bottomBar = bottomBarRef.current;
 
         if (tableScrollContainer && tableWrapper && tableContainer && bottomBar) {
-            const syncScroll = (source, target) => {
+            const syncScroll = (source: HTMLDivElement, target: HTMLDivElement) => {
                 target.scrollLeft = source.scrollLeft;
             };
 
@@ -112,9 +120,9 @@ const MainContent = () => {
                         tableScrollContainer.classList.add('sticky-scroll-bar');
                         tableScrollContainer.style.position = 'fixed';
                         tableScrollContainer.style.bottom = `${window.innerHeight - containerBottom}px`;
-                        tableScrollContainer.style.left = `${tableContainer.getBoundingClientRect().left}px`;  // Установим левое смещение полосы прокрутки относительно контейнера
-                        tableScrollContainer.style.width = `${tableWrapper.clientWidth}px`; // Ограничиваем ширину полосы прокрутки
-                        tableScrollContainer.style.overflowX = 'auto'; // Чтобы полоска могла прокручиваться
+                        tableScrollContainer.style.left = `${tableContainer.getBoundingClientRect().left}px`; 
+                        tableScrollContainer.style.width = `${tableWrapper.clientWidth}px`; 
+                        tableScrollContainer.style.overflowX = 'auto'; 
                         isSticky.current = true;
                     }
                 } else {
@@ -139,14 +147,14 @@ const MainContent = () => {
         }
     }, [columns, logs]);
 
-    const handleMouseDown = (index, event) => {
+    const handleMouseDown = (index: number, event: React.MouseEvent<HTMLDivElement>) => {
         setIsResizing(true);
         setCurrentColIndex(index);
         setStartX(event.clientX);
         setStartWidth(colWidths[index]);
     };
 
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
         if (isResizing && currentColIndex !== null) {
             const deltaX = event.clientX - startX;
             const newWidths = [...colWidths];
@@ -173,9 +181,14 @@ const MainContent = () => {
         }
     };
 
-    const handleCellClick = (content, event) => {
+    const handleCellClick = (content: any, event: React.MouseEvent<HTMLDivElement>) => {
         try {
-            content = JSON.stringify(content)
+            // Проверяем, является ли target HTMLDivElement
+            if (!(event.target instanceof HTMLDivElement)) {
+                return;
+            }
+
+            content = JSON.stringify(content);
             console.log("Clicked content:", content);
             console.log("Event target:", event.target);
             const cellRect = event.target.getBoundingClientRect();
@@ -200,6 +213,11 @@ const MainContent = () => {
             });
 
             const handleScroll = () => {
+                // Проверяем, является ли target HTMLDivElement
+                if (!(event.target instanceof HTMLDivElement)) {
+                    return;
+                }
+
                 const updatedRect = event.target.getBoundingClientRect();
                 let updatedLeftPosition = updatedRect.left + window.scrollX;
                 let updatedTopPosition = updatedRect.bottom + window.scrollY;
@@ -218,10 +236,10 @@ const MainContent = () => {
                 });
             };
 
-            tableContainerRef.current.addEventListener('scroll', handleScroll);
+            tableContainerRef.current?.addEventListener('scroll', handleScroll);
 
             return () => {
-                tableContainerRef.current.removeEventListener('scroll', handleScroll);
+                tableContainerRef.current?.removeEventListener('scroll', handleScroll);
             };
         } catch (error) {
             console.error("Error in handleCellClick:", error);
@@ -252,7 +270,7 @@ const MainContent = () => {
                                 min="5"
                                 step="5"
                                 value={refreshInterval}
-                                onChange={(e) => setRefreshInterval(e.target.value)}
+                                onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
                             />
                         </label>
                     </div>

@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { FC, ReactNode } from 'react';
 
-const Layout = ({ header, footer, children }) => {
+interface LayoutProps {
+  header: ReactNode;
+  footer: ReactNode;
+  children: ReactNode;
+}
+
+const Layout: FC<LayoutProps> = ({ header, footer, children }) => {
   return (
     <div className="layout">
       <header className="layout-header">
