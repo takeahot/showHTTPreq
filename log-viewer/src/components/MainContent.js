@@ -20,8 +20,8 @@ const MainContent = () => {
     const tableWrapperRef = useRef(null);
     const tableContainerRef = useRef(null);
     const bottomBarRef = useRef(null);
+    const popupRef = useRef(null); 
     const isSticky = useRef(false);
-    const popupRef = useRef(null); // Ref для всплывающего окна
 
     useEffect(() => {
         fetch('/logs_last_part')
@@ -38,7 +38,7 @@ const MainContent = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (logs.length > 0) {
-                const lastLogId = logs[0].id; // Используем id самого верхнего лога в таблице
+                const lastLogId = logs[0].id;
                 fetch(`/logs_after/${lastLogId}`)
                     .then(response => response.json())
                     .then(newLogs => {
@@ -53,9 +53,34 @@ const MainContent = () => {
     }, [logs, refreshInterval]);
 
     useEffect(() => {
+        const tableContainer = tableContainerRef.current;
+        const tableWrapper = tableWrapperRef.current;
+        const tableScrollContainer = tableScrollContainerRef.current;
+
+        if (tableContainer && tableWrapper && tableScrollContainer) {
+            const handleWheel = (event) => {
+                if (event.target === tableScrollContainer) {
+                    // Горизонтальная прокрутка, если мышь над горизонтальной полосой прокрутки
+                    tableWrapper.scrollLeft += event.deltaY;
+                    event.preventDefault();
+                } else {
+                    // Вертикальная прокрутка в области таблицы
+                    tableWrapper.scrollTop += event.deltaY;
+                }
+            };
+
+            tableContainer.addEventListener('wheel', handleWheel);
+
+            return () => {
+                tableContainer.removeEventListener('wheel', handleWheel);
+            };
+        }
+    }, [logs]);
+
+    useEffect(() => {
         const updateScrollBarWidth = () => {
             if (tableRef.current && tableScrollBarRef.current) {
-                const tableWidth = tableRef.current.scrollWidth; // Ширина всей таблицы
+                const tableWidth = tableRef.current.scrollWidth;
                 tableScrollBarRef.current.style.width = `${tableWidth}px`;
             }
         };
@@ -65,8 +90,9 @@ const MainContent = () => {
         const tableScrollContainer = tableScrollContainerRef.current;
         const tableWrapper = tableWrapperRef.current;
         const tableContainer = tableContainerRef.current;
+        const bottomBar = bottomBarRef.current;
 
-        if (tableScrollContainer && tableWrapper && tableContainer) {
+        if (tableScrollContainer && tableWrapper && tableContainer && bottomBar) {
             const syncScroll = (source, target) => {
                 target.scrollLeft = source.scrollLeft;
             };
@@ -136,7 +162,7 @@ const MainContent = () => {
 
     const handleLoadMore = () => {
         if (logs.length > 0) {
-            const firstLogId = logs[logs.length - 1].id; // Используем id самого нижнего лога в таблице
+            const firstLogId = logs[logs.length - 1].id;
             fetch(`/logs_before/${firstLogId}`)
                 .then(response => response.json())
                 .then(previousLogs => {
@@ -149,19 +175,18 @@ const MainContent = () => {
 
     const handleCellClick = (content, event) => {
         const cellRect = event.target.getBoundingClientRect();
-        const popupWidth = 300; // Предполагаемая ширина всплывающего окна
-        const popupHeight = 150; // Предполагаемая высота всплывающего окна
+        const popupWidth = 300; 
+        const popupHeight = 150; 
 
         let leftPosition = cellRect.left + window.scrollX;
         let topPosition = cellRect.bottom + window.scrollY;
 
-        // Проверка, не выходит ли всплывающее окно за границы экрана
         if (leftPosition + popupWidth > window.innerWidth) {
-            leftPosition = window.innerWidth - popupWidth - 10; // Сдвиг влево
+            leftPosition = window.innerWidth - popupWidth - 10;
         }
 
         if (topPosition + popupHeight > window.innerHeight) {
-            topPosition = cellRect.top + window.scrollY - popupHeight - 10; // Сдвиг вверх
+            topPosition = cellRect.top + window.scrollY - popupHeight - 10;
         }
 
         setPopupContent(content);
@@ -170,7 +195,6 @@ const MainContent = () => {
             left: leftPosition,
         });
 
-        // Обновляем позицию при каждом скролле таблицы
         const handleScroll = () => {
             const updatedRect = event.target.getBoundingClientRect();
             let updatedLeftPosition = updatedRect.left + window.scrollX;
@@ -192,7 +216,6 @@ const MainContent = () => {
 
         tableContainerRef.current.addEventListener('scroll', handleScroll);
 
-        // Удаление обработчика событий при закрытии popup
         return () => {
             tableContainerRef.current.removeEventListener('scroll', handleScroll);
         };
