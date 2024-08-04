@@ -20,8 +20,8 @@ const MainContent = () => {
     const tableWrapperRef = useRef(null);
     const tableContainerRef = useRef(null);
     const bottomBarRef = useRef(null);
-    const popupRef = useRef(null); // Ref для всплывающего окна
     const isSticky = useRef(false);
+    const popupRef = useRef(null); // Ref для всплывающего окна
 
     useEffect(() => {
         fetch('/logs_last_part')
@@ -51,11 +51,11 @@ const MainContent = () => {
     
         return () => clearInterval(intervalId);
     }, [logs, refreshInterval]);
-    
+
     useEffect(() => {
         const updateScrollBarWidth = () => {
             if (tableRef.current && tableScrollBarRef.current) {
-                const tableWidth = tableRef.current.scrollWidth;
+                const tableWidth = tableRef.current.scrollWidth; // Ширина всей таблицы
                 tableScrollBarRef.current.style.width = `${tableWidth}px`;
             }
         };
@@ -65,9 +65,8 @@ const MainContent = () => {
         const tableScrollContainer = tableScrollContainerRef.current;
         const tableWrapper = tableWrapperRef.current;
         const tableContainer = tableContainerRef.current;
-        const bottomBar = bottomBarRef.current;
 
-        if (tableScrollContainer && tableWrapper && tableContainer && bottomBar) {
+        if (tableScrollContainer && tableWrapper && tableContainer) {
             const syncScroll = (source, target) => {
                 target.scrollLeft = source.scrollLeft;
             };
@@ -87,6 +86,9 @@ const MainContent = () => {
                         tableScrollContainer.classList.add('sticky-scroll-bar');
                         tableScrollContainer.style.position = 'fixed';
                         tableScrollContainer.style.bottom = `${window.innerHeight - containerBottom}px`;
+                        tableScrollContainer.style.left = `${tableContainer.getBoundingClientRect().left}px`;  // Установим левое смещение полосы прокрутки относительно контейнера
+                        tableScrollContainer.style.width = `${tableWrapper.clientWidth}px`; // Ограничиваем ширину полосы прокрутки
+                        tableScrollContainer.style.overflowX = 'auto'; // Чтобы полоска могла прокручиваться
                         isSticky.current = true;
                     }
                 } else {
@@ -94,6 +96,7 @@ const MainContent = () => {
                         tableScrollContainer.classList.remove('sticky-scroll-bar');
                         tableScrollContainer.style.position = 'relative';
                         tableScrollContainer.style.bottom = '0';
+                        tableScrollContainer.style.left = '0';
                         isSticky.current = false;
                     }
                 }

@@ -4,7 +4,7 @@
     height: 100%;
     width: 100%;
     gap: 10px;
-    overflow: hidden; /* Чтобы управлять прокруткой внутри дочерних элементов */
+    overflow: hidden;
 }
 
 .sidebar {
@@ -16,8 +16,8 @@
     display: grid;
     grid-template-rows: auto 1fr auto;
     height: 100%;
-    width: 100%; /* Ограничиваем ширину до 100% контейнера */
-    overflow: hidden; /* Отключаем прокрутку на уровне контента */
+    width: 100%;
+    overflow: hidden;
 }
 
 .top-bar {
@@ -34,7 +34,7 @@
 }
 
 .bottom-bar button {
-    margin-left: 0; /* Убедитесь, что отступ слева отсутствует */
+    margin-left: 0;
 }
 
 .popup {
@@ -59,41 +59,51 @@
 }
 
 .table-container {
-    width: 100%; /* или другая желаемая ширина, например, 800px */
-    overflow-x: auto; /* Горизонтальная полоса прокрутки появится, если содержимое будет слишком широким */
-    max-width: 100%; /* Это ограничит ширину контейнера, чтобы она не превышала ширину родительского элемента */
-    box-sizing: border-box; /* Чтобы учесть padding и border внутри ширины */
+    width: 100%;
+    overflow-x: hidden; /* Отключаем горизонтальную прокрутку для контейнера */
+    max-width: 100%;
+    box-sizing: border-box;
     position: relative;
 }
 
 .table-scroll-container {
     position: relative;
-    height: 20px; 
-    overflow-x: auto; /* Включаем горизонтальную прокрутку */
+    height: 20px;
+    overflow-x: scroll; /* Включаем горизонтальную прокрутку только здесь */
     overflow-y: hidden;
     background-color: #f1f1f1;
     margin-top: 0;
-    width: 100%; /* Ширина контейнера соответствует ширине родительского элемента */
+    width: 100%; /* Ширина контейнера соответствует ширине видимой части таблицы */
+    scrollbar-width: auto; /* Для браузеров на основе Firefox */
+}
+
+.table-scroll-container::-webkit-scrollbar {
+    display: block;
+    height: 16px; /* Высота полосы прокрутки */
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.5); /* Цвет ползунка */
+    border-radius: 10px; /* Радиус закругления ползунка */
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Цвет фона трека ползунка */
 }
 
 .table-scroll-bar {
-    min-height: 20px; /* Минимальная высота, чтобы предотвратить схлопывание */
-    width: 100%;
+    min-height: 20px;
+    width: 100%; /* Ширина бара соответствует ширине таблицы */
     overflow-x: auto;
     overflow-y: hidden;
     box-sizing: border-box;
 }
 
-.table-wrapper {
-    overflow: hidden; /* Убираем горизонтальную прокрутку */
-    padding-bottom: 8px; /* Пространство под горизонтальную полосу прокрутки */
-}
-
 .sticky-scroll-bar {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
+    width: 100%; /* Ширина бара соответствует ширине видимой части таблицы */
     z-index: 1000;
     background-color: #fff;
 }
@@ -117,4 +127,9 @@
     cursor: pointer;
     font-size: 18px;
     color: #888;
+}
+
+.table-wrapper {
+    overflow: hidden; /* Убираем горизонтальную прокрутку из враппера */
+    padding-bottom: 8px; /* Пространство под горизонтальную полосу прокрутки */
 }
