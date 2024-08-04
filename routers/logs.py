@@ -9,7 +9,6 @@ from dependencies import get_db
 from typing import List, Any, Dict
 from datetime import datetime
 import logging
-from pyrsistent import pmap
 from pprint import pformat
 
 router = APIRouter()
