@@ -39,7 +39,7 @@ const MainContent: React.FC = () => {
 
     useEffect(() => {
         if (viewMode === 'logMonitoring') {
-            fetch('/logs_last_part')
+            fetch('/x/logs_last_part')
                 .then(response => response.json())
                 .then(data => {
                     const colKeys = Object.keys(data[0] || {});
@@ -57,7 +57,7 @@ const MainContent: React.FC = () => {
             const intervalId = setInterval(() => {
                 if (logs.length > 0) {
                     const lastLogId = logs[0].id;
-                    fetch(`/logs_after/${lastLogId}`)
+                    fetch(`/x/logs_after/${lastLogId}`)
                         .then(response => response.json())
                         .then(newLogs => {
                             if (newLogs.length > 1) {
@@ -181,7 +181,7 @@ const MainContent: React.FC = () => {
     const handleLoadMore = () => {
         if (logs.length > 0) {
             const firstLogId = logs[logs.length - 1].id;
-            fetch(`/logs_before/${firstLogId}`)
+            fetch(`/x/logs_before/${firstLogId}`)
                 .then(response => response.json())
                 .then(previousLogs => {
                     if (previousLogs.length > 1) {
@@ -265,7 +265,7 @@ const MainContent: React.FC = () => {
             if (minId !== null && maxId !== null && lastFetchedId !== null && !allLogsFetched) {
                 const nextMinId = Math.max(minId, lastFetchedId - 10 + 1); // Рассчитываем следующий диапазон ID для запроса
     
-                fetch(`/logs_for_ids?min_id=${nextMinId}&max_id=${lastFetchedId}`)
+                fetch(`/x/logs_for_ids?min_id=${nextMinId}&max_id=${lastFetchedId}`)
                     .then(response => response.json())
                     .then(newLogs => {
                         if (newLogs.length > 0) {

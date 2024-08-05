@@ -162,23 +162,23 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
 def add_prefix_to_keys(data: Dict[str, Any], prefix: str) -> Dict[str, Any]:
     return {f"{prefix}_{key}": value for key, value in data.items()}
 
-@router.get("/logs", response_model=List[schemas.Log], operation_id="read_logs")
+@router.get("/x/logs", response_model=List[schemas.Log], operation_id="read_logs")
 async def read_logs(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     logs = crud.get_logs(db, skip=skip, limit=limit)
     if not logs:
         raise HTTPException(status_code=404, detail="Logs not found")
     return logs
 
-@router.post("/logs", response_model=schemas.Log, operation_id="create_log")
+@router.post("/x/logs", response_model=schemas.Log, operation_id="create_log")
 async def create_log(log: schemas.LogCreate, db: Session = Depends(get_db)):
     return crud.create_log(db=db, log=log)
 
-@router.delete("/logs", operation_id="delete_logs")
+@router.delete("/x/logs", operation_id="delete_logs")
 async def delete_logs(db: Session = Depends(get_db)):
     crud.delete_logs(db)
     return {"message": "Logs deleted successfully"}
 
-@router.api_route("/logs_parsed_by_page/{page_str}", methods=['GET'], operation_id="logs_parsed_by_page")
+@router.api_route("/x/logs_parsed_by_page/{page_str}", methods=['GET'], operation_id="logs_parsed_by_page")
 async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
     pageSize = 100
     logging.info(f'Запрос на страницу: {page_str}')
@@ -228,7 +228,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
     return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
 
-@router.get("/logs_last_part", operation_id="logs_last_part")
+@router.get("/x/logs_last_part", operation_id="logs_last_part")
 async def logs_last_part(db: Session = Depends(get_db)):
     print('log last part')
     pageSize = 50
@@ -276,7 +276,7 @@ async def logs_last_part(db: Session = Depends(get_db)):
 
     return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
 
-@router.get("/logs_after/{last_log_id}", operation_id="logs_after_id")
+@router.get("/x/logs_after/{last_log_id}", operation_id="logs_after_id")
 async def logs_after_id(last_log_id: int, db: Session = Depends(get_db)):
     columns = models.Logs.__table__.columns.keys()
     # Получаем все логи с id меньше указанного
@@ -322,7 +322,7 @@ async def logs_after_id(last_log_id: int, db: Session = Depends(get_db)):
 
     return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
 
-@router.get("/logs_before/{log_id}", response_model=List[Dict[str, Any]], operation_id="get_logs_before")
+@router.get("/x/logs_before/{log_id}", response_model=List[Dict[str, Any]], operation_id="get_logs_before")
 async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
     columns = models.Logs.__table__.columns.keys()
 
@@ -360,7 +360,7 @@ async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
     # Возвращаем обработанный результат
     return json.loads(json.dumps(result, indent=4, default=default_serializer))
 
-@router.get("/logs_for_period", response_model=List[Dict[str, Any]], operation_id="get_logs_for_period")
+@router.get("/x/logs_for_period", response_model=List[Dict[str, Any]], operation_id="get_logs_for_period")
 async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session = Depends(get_db)):
     print('logs_for_period')
     # Парсим параметры даты
@@ -405,7 +405,7 @@ async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session
 
 from fastapi import Query
 
-@router.get("/logs_for_ids", response_model=List[Dict[str, Any]], operation_id="get_logs_for_ids")
+@router.get("/x/logs_for_ids", response_model=List[Dict[str, Any]], operation_id="get_logs_for_ids")
 async def get_logs_for_ids(
     min_id: int = Query(..., description="Минимальный ID лога"),
     max_id: int = Query(..., description="Максимальный ID лога"),  # Изменено с last_id на max_id
