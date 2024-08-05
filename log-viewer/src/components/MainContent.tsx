@@ -4,7 +4,7 @@ import './MainContent.css';
 
 interface LogEntry {
     id: number;
-    [key: string]: any; // Для остальных полей, которые могут быть в объекте
+    [key: string]: any;
 }
 
 interface PopupPosition {
@@ -21,9 +21,12 @@ const MainContent: React.FC = () => {
     const [startX, setStartX] = useState<number>(0);
     const [startWidth, setStartWidth] = useState<number>(0);
     const [refreshInterval, setRefreshInterval] = useState<number>(30);
-    const [lastUpdated, setLastUpdated] = useState<string>(''); // Добавлено состояние для времени последнего обновления
+    const [lastUpdated, setLastUpdated] = useState<string>(''); 
     const [popupContent, setPopupContent] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<PopupPosition>({ top: 0, left: 0 });
+    const [viewMode, setViewMode] = useState<'logMonitoring' | 'selectedPeriod'>('logMonitoring');
+    const [minId, setMinId] = useState<number | null>(null);
+    const [maxId, setMaxId] = useState<number | null>(null);
 
     const tableRef = useRef<HTMLDivElement | null>(null);
     const tableScrollBarRef = useRef<HTMLDivElement | null>(null);
@@ -35,35 +38,39 @@ const MainContent: React.FC = () => {
     const isSticky = useRef<boolean>(false);
 
     useEffect(() => {
-        fetch('/logs_last_part')
-            .then(response => response.json())
-            .then(data => {
-                const colKeys = Object.keys(data[0] || {});
-                setColumns(colKeys);
-                setColWidths(colKeys.map(() => 150)); 
-                const logsWithoutHeaders = data.slice(1);
-                setLogs(logsWithoutHeaders);
-                setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
-            });
-    }, []);
+        if (viewMode === 'logMonitoring') {
+            fetch('/logs_last_part')
+                .then(response => response.json())
+                .then(data => {
+                    const colKeys = Object.keys(data[0] || {});
+                    setColumns(colKeys);
+                    setColWidths(colKeys.map(() => 150)); 
+                    const logsWithoutHeaders = data.slice(1);
+                    setLogs(logsWithoutHeaders);
+                    setLastUpdated(new Date().toISOString());
+                });
+        }
+    }, [viewMode]);
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (logs.length > 0) {
-                const lastLogId = logs[0].id;
-                fetch(`/logs_after/${lastLogId}`)
-                    .then(response => response.json())
-                    .then(newLogs => {
-                        if (newLogs.length > 1) {
-                            setLogs(prevLogs => [...newLogs.slice(1), ...prevLogs]);
-                            setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
-                        }
-                    });
-            }
-        }, refreshInterval * 1000);
-    
-        return () => clearInterval(intervalId);
-    }, [logs, refreshInterval]);
+        if (viewMode === 'logMonitoring') {
+            const intervalId = setInterval(() => {
+                if (logs.length > 0) {
+                    const lastLogId = logs[0].id;
+                    fetch(`/logs_after/${lastLogId}`)
+                        .then(response => response.json())
+                        .then(newLogs => {
+                            if (newLogs.length > 1) {
+                                setLogs(prevLogs => [...newLogs.slice(1), ...prevLogs]);
+                                setLastUpdated(new Date().toISOString());
+                            }
+                        });
+                }
+            }, refreshInterval * 1000);
+        
+            return () => clearInterval(intervalId);
+        }
+    }, [logs, refreshInterval, viewMode]);
 
     useEffect(() => {
         const tableContainer = tableContainerRef.current;
@@ -179,7 +186,7 @@ const MainContent: React.FC = () => {
                 .then(previousLogs => {
                     if (previousLogs.length > 1) {
                         setLogs(prevLogs => [...prevLogs, ...previousLogs.slice(1)]);
-                        setLastUpdated(new Date().toISOString()); // Устанавливаем время последнего обновления
+                        setLastUpdated(new Date().toISOString());
                     }
                 });
         }
@@ -192,8 +199,6 @@ const MainContent: React.FC = () => {
             }
 
             content = JSON.stringify(content);
-            console.log("Clicked content:", content);
-            console.log("Event target:", event.target);
             const cellRect = event.target.getBoundingClientRect();
             const popupWidth = 300; 
             const popupHeight = 150; 
@@ -252,56 +257,156 @@ const MainContent: React.FC = () => {
         setPopupContent(null);
     };
 
-    if (!columns.length || !logs.length) {
-        return <div>Loading...</div>;
-    }
+    const handleShowLogsForIds = () => {
+        let lastFetchedId: number | null = maxId; // Начинаем с максимального ID
+        let allLogsFetched = false;
+    
+        const fetchLogsForIds = () => {
+            if (minId !== null && maxId !== null && lastFetchedId !== null && !allLogsFetched) {
+                const nextMinId = Math.max(minId, lastFetchedId - 10 + 1); // Рассчитываем следующий диапазон ID для запроса
+    
+                fetch(`/logs_for_ids?min_id=${nextMinId}&max_id=${lastFetchedId}`)
+                    .then(response => response.json())
+                    .then(newLogs => {
+                        if (newLogs.length > 0) {
+                            // Исключаем первую запись с заголовками, если она есть
+                            const logsWithoutHeaders = newLogs.filter((log: LogEntry) => typeof log.id === 'number');
+    
+                            // Добавляем новые логи в конец общего массива
+                            setLogs(prevLogs => [...prevLogs, ...logsWithoutHeaders].sort((a, b) => b.id - a.id));
+    
+                            setLastUpdated(new Date().toISOString());
+    
+                            // Обновляем lastFetchedId на следующий диапазон ID
+                            lastFetchedId = nextMinId - 1;
+    
+                            // Если достигли minId, значит все данные уже загружены
+                            if (lastFetchedId < minId) {
+                                allLogsFetched = true;
+                            } else {
+                                fetchLogsForIds(); // Загружаем следующую порцию логов
+                            }
+                        } else {
+                            allLogsFetched = true; // Останавливаем загрузку, если больше нет данных
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching logs:", error);
+                        allLogsFetched = true;
+                    });
+            }
+        };
+    
+        fetchLogsForIds();
+    };
+    
+    // Обработчики для кнопок в сайдбаре
+    const handleLogMonitoringClick = () => {
+        setLogs([]); // Очищаем таблицу
+        setViewMode('logMonitoring');
+    };
+
+    const handleSelectedPeriodClick = () => {
+        setLogs([]); // Очищаем таблицу
+        setViewMode('selectedPeriod');
+    };
 
     return (
         <div className="main-content" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
             <aside className="sidebar">
-                <button>Button 1</button>
-                <button>Button 2</button>
-                <button>Button 3</button>
+                <button onClick={handleLogMonitoringClick}>Log Monitoring</button>
+                <button onClick={handleSelectedPeriodClick}>Selected Period Logs</button>
             </aside>
             <section className="content">
-                <div className="top-bar">
-                    <div className="refresh-group">
-                        <label>Auto-refresh (seconds):
-                            <input
-                                type="number"
-                                min="5"
-                                step="5"
-                                value={refreshInterval}
-                                onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
-                            />
-                        </label>
-                    </div>
-                    <div className="last-updated">
-                        Last updated: {lastUpdated}
-                    </div>
-                </div>
-                <div className="table-container" ref={tableContainerRef}>
-                    <div className="table-wrapper" ref={tableWrapperRef}>
-                        <LogTable
-                            logs={logs}
-                            columns={columns}
-                            colWidths={colWidths}
-                            onCellClick={handleCellClick}
-                            onColumnResizeStart={handleMouseDown}
-                            tableRef={tableRef}
-                        />
-                    </div>
-                    <div className="table-scroll-container" ref={tableScrollContainerRef}>
-                        <div
-                            className="table-scroll-bar"
-                            ref={tableScrollBarRef}
-                            style={{ width: tableRef.current ? `${tableRef.current.scrollWidth}px` : '100%' }}
-                        ></div>
-                    </div>
-                    <div className="bottom-bar" ref={bottomBarRef}>
-                        <button onClick={handleLoadMore}>Load More Logs</button>
-                    </div>
-                </div>
+                {viewMode === 'logMonitoring' ? (
+                    <>
+                        <div className="top-bar">
+                            <div className="refresh-group">
+                                <label>Auto-refresh (seconds):
+                                    <input
+                                        type="number"
+                                        min="5"
+                                        step="5"
+                                        value={refreshInterval}
+                                        onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
+                                    />
+                                </label>
+                            </div>
+                            <div className="last-updated">
+                                Last updated: {lastUpdated}
+                            </div>
+                        </div>
+                        <div className="table-container" ref={tableContainerRef}>
+                            <div className="table-wrapper" ref={tableWrapperRef}>
+                                <LogTable
+                                    logs={logs}
+                                    columns={columns}
+                                    colWidths={colWidths}
+                                    onCellClick={handleCellClick}
+                                    onColumnResizeStart={handleMouseDown}
+                                    tableRef={tableRef}
+                                />
+                            </div>
+                            <div className="table-scroll-container" ref={tableScrollContainerRef}>
+                                <div
+                                    className="table-scroll-bar"
+                                    ref={tableScrollBarRef}
+                                    style={{ width: tableRef.current ? `${tableRef.current.scrollWidth}px` : '100%' }}
+                                ></div>
+                            </div>
+                            <div className="bottom-bar" ref={bottomBarRef}>
+                                <button onClick={handleLoadMore}>Load More Logs</button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="top-bar">
+                            <div className="refresh-group">
+                                <label>Min ID:
+                                    <input
+                                        type="number"
+                                        value={minId !== null ? minId : ''}
+                                        onChange={(e) => setMinId(e.target.value ? parseInt(e.target.value, 10) : null)}
+                                    />
+                                </label>
+                                <label>Max ID:
+                                    <input
+                                        type="number"
+                                        value={maxId !== null ? maxId : ''}
+                                        onChange={(e) => setMaxId(e.target.value ? parseInt(e.target.value, 10) : null)}
+                                    />
+                                </label>
+                                <button onClick={handleShowLogsForIds}>Show Logs</button>
+                            </div>
+                            <div className="last-updated">
+                                Last updated: {lastUpdated}
+                            </div>
+                        </div>
+                        <div className="table-container" ref={tableContainerRef}>
+                            <div className="table-wrapper" ref={tableWrapperRef}>
+                                <LogTable
+                                    logs={logs}
+                                    columns={columns}
+                                    colWidths={colWidths}
+                                    onCellClick={handleCellClick}
+                                    onColumnResizeStart={handleMouseDown}
+                                    tableRef={tableRef}
+                                />
+                            </div>
+                            <div className="table-scroll-container" ref={tableScrollContainerRef}>
+                                <div
+                                    className="table-scroll-bar"
+                                    ref={tableScrollBarRef}
+                                    style={{ width: tableRef.current ? `${tableRef.current.scrollWidth}px` : '100%' }}
+                                ></div>
+                            </div>
+                            <div className="bottom-bar" ref={bottomBarRef}>
+                                <button onClick={handleLoadMore}>Load More Logs</button>
+                            </div>
+                        </div>
+                    </>
+                )}
                 {popupContent && (
                     <div
                         ref={popupRef}

@@ -10,6 +10,7 @@ from typing import List, Any, Dict
 from datetime import datetime
 import logging
 from pprint import pformat
+from sqlalchemy import cast, DateTime
 
 router = APIRouter()
 
@@ -229,6 +230,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
 @router.get("/logs_last_part", operation_id="logs_last_part")
 async def logs_last_part(db: Session = Depends(get_db)):
+    print('log last part')
     pageSize = 50
 
     columns = models.Logs.__table__.columns.keys()
@@ -358,6 +360,87 @@ async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
     # Возвращаем обработанный результат
     return json.loads(json.dumps(result, indent=4, default=default_serializer))
 
+@router.get("/logs_for_period", response_model=List[Dict[str, Any]], operation_id="get_logs_for_period")
+async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session = Depends(get_db)):
+    print('logs_for_period')
+    # Парсим параметры даты
+    try:
+        start_date = datetime.fromisoformat(start)
+        end_date = datetime.fromisoformat(end)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format.")
+    print('start', start_date, 'end', end_date, 'id', lastId)
+    columns = models.Logs.__table__.columns.keys()
+
+    # Запрос для получения логов, соответствующих условиям
+    query = db.query(*[getattr(models.Logs, col) for col in columns]) \
+              .filter(models.Logs.timestamp >= start_date) \
+              .filter(models.Logs.timestamp <= end_date)
+
+    if lastId > 0:
+        query = query.filter(models.Logs.id > lastId)
+
+    dbanswer = query.order_by(models.Logs.id.asc()) \
+                    .limit(10) \
+                    .all()
+    print('dbanswer', dbanswer)
+    if not dbanswer:
+        raise HTTPException(status_code=404, detail="Logs not found")
+
+    # Преобразуем каждый лог в нужный формат
+    unsortedResult = [flatDbAnswerItem({col: getattr(row, col) for col in columns}) for row in dbanswer]
+
+    # Удаляем ключ _sa_instance_state, если он присутствует
+    for item in unsortedResult:
+        if '_sa_instance_state' in item:
+            del item['_sa_instance_state']
+
+    # Вставляем заголовки
+    headers = {v: v for v in list(reduce(lambda allKeys, dict: allKeys.union(dict.keys()), unsortedResult, set()))}
+    unsortedResult.insert(0, headers)
+    result = list(map(sort_result_item, unsortedResult))
+
+    # Возвращаем обработанный результат
+    return json.loads(json.dumps(result, indent=4, default=default_serializer))
+
+from fastapi import Query
+
+@router.get("/logs_for_ids", response_model=List[Dict[str, Any]], operation_id="get_logs_for_ids")
+async def get_logs_for_ids(
+    min_id: int = Query(..., description="Минимальный ID лога"),
+    max_id: int = Query(..., description="Максимальный ID лога"),  # Изменено с last_id на max_id
+    db: Session = Depends(get_db)
+):
+    # Проверка корректности входных данных
+    if min_id < 0 or max_id < 0 or min_id > max_id:
+        raise HTTPException(status_code=400, detail="Invalid ID parameters")
+
+    columns = models.Logs.__table__.columns.keys()
+
+    # Формируем запрос для получения логов в заданном диапазоне id
+    query = db.query(*[getattr(models.Logs, col) for col in columns]) \
+              .filter(models.Logs.id >= min_id) \
+              .filter(models.Logs.id <= max_id) \
+              .order_by(models.Logs.id.desc())  # Сортируем по убыванию id
+
+    # Выполняем запрос
+    dbanswer = query.limit(10).all()
+
+    if not dbanswer:
+        raise HTTPException(status_code=404, detail="Logs not found")
+
+    # Обрабатываем результаты и удаляем внутренние служебные поля
+    unsortedResult = [flatDbAnswerItem({col: getattr(row, col) for col in columns}) for row in dbanswer]
+
+    for item in unsortedResult:
+        if '_sa_instance_state' in item:
+            del item['_sa_instance_state']
+
+    # Сортируем результат
+    result = list(map(sort_result_item, unsortedResult))
+
+    return json.loads(json.dumps(result, indent=4, default=default_serializer)) 
+    
 def sort_result_item(item: Dict[str, Any]) -> Dict[str, Any]:
     mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp','eventId','internalId','number','ticketId']
     sorted_item = {key: item.pop(key, 'Not found') for key in mandatory_keys}
