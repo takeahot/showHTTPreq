@@ -14,7 +14,8 @@ from fastapi.responses import FileResponse
 router = APIRouter()
 
 domains = [
-    "https://morzhkzdhj3oi.elma365.eu"
+    # "https://morzhkzdhj3oi.elma365.eu",
+    "https://7isfa26wfvp4a.elma365.eu"
 ]
 
 ALLOWED_BROWSERS = ["chrome", "opera", "firefox", "safari", "edge"]
@@ -125,30 +126,58 @@ async def handle_request(request: Request, db: Session, method: str):
         print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get('/x/', operation_id="root_request_get")
+@router.get('/', operation_id="root_request_get")
 async def write_request_get(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "GET")
 
-@router.put('/x/', operation_id="root_request_put")
+@router.put('/', operation_id="root_request_put")
 async def write_request_put(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "PUT")
 
-@router.post('/x/', operation_id="root_request_post")
+@router.post('/', operation_id="root_request_post")
 async def write_request_post(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "POST")
 
-@router.delete('/x/', operation_id="root_request_delete")
+@router.delete('/', operation_id="root_request_delete")
 async def write_request_delete(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "DELETE")
 
-@router.patch('/x/', operation_id="root_request_patch")
+@router.patch('/', operation_id="root_request_patch")
 async def write_request_patch(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "PATCH")
 
-@router.head('/x/', operation_id="root_request_head")
+@router.head('/', operation_id="root_request_head")
 async def write_request_head(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "HEAD")
 
-@router.options('/x/', operation_id="root_request_options")
+@router.options('/', operation_id="root_request_options")
 async def write_request_options(request: Request, db: Session = Depends(get_db)):
     return await handle_request(request, db, "OPTIONS")
+
+# @router.get('/x/', operation_id="root_request_get")
+# async def write_request_get(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "GET")
+
+# @router.put('/x/', operation_id="root_request_put")
+# async def write_request_put(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "PUT")
+
+# @router.post('/x/', operation_id="root_request_post")
+# async def write_request_post(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "POST")
+
+# @router.delete('/x/', operation_id="root_request_delete")
+# async def write_request_delete(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "DELETE")
+
+# @router.patch('/x/', operation_id="root_request_patch")
+# async def write_request_patch(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "PATCH")
+
+# @router.head('/x/', operation_id="root_request_head")
+# async def write_request_head(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "HEAD")
+
+# @router.options('/x/', operation_id="root_request_options")
+# async def write_request_options(request: Request, db: Session = Depends(get_db)):
+#     return await handle_request(request, db, "OPTIONS")

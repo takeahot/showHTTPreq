@@ -45,8 +45,12 @@ const MainContent: React.FC = () => {
                     const colKeys = Object.keys(data[0] || {});
                     setColumns(colKeys);
                     setColWidths(colKeys.map(() => 150)); 
-                    const logsWithoutHeaders = data.slice(1);
-                    setLogs(logsWithoutHeaders);
+                    
+                    // Удаляем дубликаты и сортируем по убыванию id
+                    const uniqueLogs = removeDuplicates(data.slice(1));
+                    uniqueLogs.sort((a, b) => b.id - a.id);
+                    
+                    setLogs(uniqueLogs);
                     setLastUpdated(new Date().toISOString());
                 });
         }
@@ -61,7 +65,13 @@ const MainContent: React.FC = () => {
                         .then(response => response.json())
                         .then(newLogs => {
                             if (newLogs.length > 1) {
-                                setLogs(prevLogs => [...newLogs.slice(1), ...prevLogs]);
+                                const combinedLogs = [...newLogs.slice(1), ...logs];
+                                
+                                // Удаляем дубликаты и сортируем по убыванию id
+                                const uniqueLogs = removeDuplicates(combinedLogs);
+                                uniqueLogs.sort((a, b) => b.id - a.id);
+                                
+                                setLogs(uniqueLogs);
                                 setLastUpdated(new Date().toISOString());
                             }
                         });
@@ -71,6 +81,14 @@ const MainContent: React.FC = () => {
             return () => clearInterval(intervalId);
         }
     }, [logs, refreshInterval, viewMode]);
+
+    const removeDuplicates = (logs: LogEntry[]): LogEntry[] => {
+        const logMap = new Map<number, LogEntry>();
+        logs.forEach(log => {
+            logMap.set(log.id, log); // Записываем только уникальные по id записи
+        });
+        return Array.from(logMap.values());
+    };
 
     useEffect(() => {
         const tableContainer = tableContainerRef.current;
@@ -185,7 +203,13 @@ const MainContent: React.FC = () => {
                 .then(response => response.json())
                 .then(previousLogs => {
                     if (previousLogs.length > 1) {
-                        setLogs(prevLogs => [...prevLogs, ...previousLogs.slice(1)]);
+                        const combinedLogs = [...logs, ...previousLogs.slice(1)];
+                        
+                        // Удаляем дубликаты и сортируем по убыванию id
+                        const uniqueLogs = removeDuplicates(combinedLogs);
+                        uniqueLogs.sort((a, b) => b.id - a.id);
+                        
+                        setLogs(uniqueLogs);
                         setLastUpdated(new Date().toISOString());
                     }
                 });
