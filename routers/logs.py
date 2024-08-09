@@ -113,7 +113,6 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
         'timestamp': timestamp,
         'eventTimestamp': event_timestamp,
         'column_names': column_name,
-        'body': body,
         'body_json': body_json,
         'eventId': event_id,
         'ticketId': ticket_id,
@@ -347,14 +346,6 @@ async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
     for item in unsortedResult:
         if '_sa_instance_state' in item:
             del item['_sa_instance_state']
-
-    def sort_result_item(item: Dict[str, Any]) -> Dict[str, Any]:
-        # Обязательные поля впереди
-        mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp', 'eventId', 'internalId', 'number', 'ticketId']
-        sorted_item = {key: item.pop(key, 'Not found') for key in mandatory_keys}
-        # Остальные поля в алфавитном порядке
-        sorted_item.update(dict(sorted(item.items())))
-        return sorted_item
 
     # Вставляем заголовки
     headers = {v: v for v in list(reduce(lambda allKeys, dict: allKeys.union(dict.keys()), unsortedResult, set()))}
