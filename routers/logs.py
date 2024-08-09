@@ -60,7 +60,7 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
         try:
             body_json = json.loads(body)
         except json.JSONDecodeError:
-            body_json = {}
+            body_json = body
 
     if isinstance(body_json, dict):
         event_name = body_json.get('eventName') \
