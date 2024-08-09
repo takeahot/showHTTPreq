@@ -34,7 +34,7 @@ async def handle_request(request: Request, db: Session, method: str):
 
         # Продолжаем с обработкой логов и пересылкой запроса
         bodyObj = await request.json()
-        print(json.dumps(bodyObj, ensure_ascii=False))
+        # print(json.dumps(bodyObj, ensure_ascii=False))
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             httpmethod=method,
@@ -53,7 +53,7 @@ async def handle_request(request: Request, db: Session, method: str):
             'ticket_comment_created',
             'ticket_comment_updated'
         ]:
-            print('Request received:', str(bodyObj['eventName']))
+            # print('Request received:', str(bodyObj['eventName']))
             return 'Request received:' + json.dumps(bodyObj, ensure_ascii=False)
 
         else:

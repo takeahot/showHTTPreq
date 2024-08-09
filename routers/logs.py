@@ -123,7 +123,7 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
         'isTriggeredViaApi': isTriggeredViaApi,
     }
 
-    print(body)
+    # print(body)
 
     # if event_name == 'ticket_updated':
     #     pass
@@ -378,7 +378,7 @@ async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session
     dbanswer = query.order_by(models.Logs.id.asc()) \
                     .limit(10) \
                     .all()
-    print('dbanswer', dbanswer)
+    # print('dbanswer', dbanswer)
     if not dbanswer:
         raise HTTPException(status_code=404, detail="Logs not found")
 
