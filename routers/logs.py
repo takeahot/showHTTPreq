@@ -446,7 +446,7 @@ async def get_logs_for_ids(
     return json.loads(json.dumps(result, ensure_ascii=False, indent=4, default=default_serializer)) 
     
 def sort_result_item(item: Dict[str, Any]) -> Dict[str, Any]:
-    mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp','eventId','internalId','number','ticketId','isTriggeredViaApi']
+    mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp','eventId','internalId','number','ticketId','isTriggeredViaApi','body_json']
     sorted_item = {key: item.pop(key, 'Not found') for key in mandatory_keys}
     sorted_item.update(dict(sorted(item.items())))
     return sorted_item
