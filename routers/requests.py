@@ -32,9 +32,9 @@ async def handle_request(request: Request, db: Session, method: str):
             index_file_path = os.path.join(static_files_path, "index.html")
             return FileResponse(index_file_path, media_type="text/html")
 
-        print(json.dumps(bodyObj, ensure_ascii=False))
         # Продолжаем с обработкой логов и пересылкой запроса
         bodyObj = await request.json()
+        print(json.dumps(bodyObj, ensure_ascii=False))
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             httpmethod=method,
