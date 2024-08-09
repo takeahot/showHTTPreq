@@ -39,7 +39,7 @@ def replace_newlines(obj):
 
 # Универсальная функция для обработки элементов логов
 def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
-    logging.info(f'Обработка item: {json.dumps(item, default=json.JSONEncoder().default, indent=4)}')
+    logging.info(f'Обработка item: {json.dumps(item, ensure_ascii=False, default=json.JSONEncoder().default, indent=4)}')
 
     # все названия колонок item
     column_name = str(item.keys())
@@ -53,15 +53,9 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
     headers = item.get('headers')
 
     # Определяем eventName и eventTimestamp и заполняем их или "Not found" по умолчанию
-    event_name = item.get('eventName', 'Not found eventName')
-    event_timestamp = item.get('eventTimestamp', 'Not found eventTimestamp')
-    event_id = item.get('eventId','Not found eventId')
-    ticket_id = item.get('ticketId',"Not found ticketId")
-    internal_id = item.get('internalId','Not found internalId')
-    number = item.get('number','Not found number')
-
     body = item.get('body', 'Not found body')
-    body_json = {}
+    body_json = {} 
+
     if isinstance(body, str):
         try:
             body_json = json.loads(body)
@@ -70,35 +64,42 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
 
     if isinstance(body_json, dict):
         event_name = body_json.get('eventName') \
-            or body_json.get('body') \
-            and body_json.get('body').get('eventName',event_name)\
-            or event_name
+            # or body_json.get('body') \
+            # and body_json.get('body').get('eventName',event_name)\
+            # or event_name
         event_timestamp = body_json.get('eventTimestamp') \
-            or body_json.get('body') \
-            and body_json.get('body').get('eventTimestamp',event_timestamp)\
-            or event_timestamp
+            # or body_json.get('body') \
+            # and body_json.get('body').get('eventTimestamp',event_timestamp)\
+            # or event_timestamp
         event_id = body_json.get('eventId') \
-            or body_json.get('body') \
-            and body_json.get('body').get('eventId',event_timestamp)\
-            or event_id
-        internal_id = body_json.get('internalId') \
-            or body_json.get('body') \
-            and body_json.get('body').get('internalId') \
-            or body_json.get('payload') \
-            and body_json.get('payload').get('internalId')\
-            or internal_id
-        number = body_json.get('number') \
-            or body_json.get('body') \
-            and body_json.get('body').get('number') \
-            or body_json.get('payload') \
-            and body_json.get('payload').get('number') \
-            or number
-        ticket_id = body_json.get('ticketId') \
-            or body_json.get('body') \
-            and body_json.get('body').get('ticketId') \
-            or body_json.get('payload') \
-            and body_json.get('payload').get('ticketId')\
-            or ticket_id
+            # or body_json.get('body') \
+            # and body_json.get('body').get('eventId',event_timestamp)\
+            # or event_id
+        isTriggeredViaApi = body_json.get('isTriggeredViaApi') != None and str(int(body_json.get('isTriggeredViaApi'))) or 'None'
+        internal_id = body_json.get('payload') \
+            and body_json.get('payload').get('internalId') 
+            # body_json.get('internalId') \
+            # or body_json.get('body') \
+            # and body_json.get('body').get('internalId') \
+            # or body_json.get('payload') \
+            # and body_json.get('payload').get('internalId')\
+            # or internal_id
+        number = body_json.get('payload') \
+            and body_json.get('payload').get('number') 
+            # body_json.get('number') \
+            # or body_json.get('body') \
+            # and body_json.get('body').get('number') \
+            # or body_json.get('payload') \
+            # and body_json.get('payload').get('number') \
+            # or number
+        ticket_id = body_json.get('payload') \
+            and body_json.get('payload').get('ticketId')
+            # body_json.get('ticketId') \
+            # or body_json.get('body') \
+            # and body_json.get('body').get('ticketId') \
+            # or body_json.get('payload') \
+            # and body_json.get('payload').get('ticketId')\
+            # or ticket_id
 
     logging.info(f'Определён eventName: {event_name}')
     logging.info(f'Определён eventTimestamp: {event_timestamp}')
@@ -120,7 +121,10 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
         'number': number,
         'ticketId': ticket_id,
         'headers': headers,
+        'isTriggeredViaApi': isTriggeredViaApi,
     }
+
+    print(body)
 
     if event_name == 'ticket_updated':
         pass
@@ -156,7 +160,7 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
             result.update(add_prefix_to_keys(item['payload'], 'payload'))
             del item['payload']
 
-    logging.info(f'Результат обработки item: {json.dumps(result, default=json.JSONEncoder().default, indent=4)}')
+    logging.info(f'Результат обработки item: {json.dumps(result, ensure_ascii=False, default=json.JSONEncoder().default, indent=4)}')
     return result
 
 def add_prefix_to_keys(data: Dict[str, Any], prefix: str) -> Dict[str, Any]:
@@ -200,7 +204,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
     logging.info('Исходные данные из базы данных:')
     for row in dbanswer:
-        logging.info(json.dumps(row, default=default_serializer, indent=4))
+        logging.info(json.dumps(row, ensure_ascii=False, default=default_serializer, indent=4))
 
     unsortedResult = []
     for ans in dbanswer:
@@ -226,7 +230,7 @@ async def logs_parsed_by_page(page_str: int, db: Session = Depends(get_db)):
 
     processed_result = replace_newlines(result)
 
-    return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(processed_result, ensure_ascii=False, indent=4, default=default_serializer))
 
 @router.get("/x/logs_last_part", operation_id="logs_last_part")
 async def logs_last_part(db: Session = Depends(get_db)):
@@ -248,7 +252,7 @@ async def logs_last_part(db: Session = Depends(get_db)):
 
     logging.info('Исходные данные из базы данных:')
     for row in dbanswer:
-        logging.info(json.dumps(row, default=default_serializer, indent=4))
+        logging.info(json.dumps(row, ensure_ascii=False, default=default_serializer, indent=4))
 
     unsortedResult = []
     for ans in dbanswer:
@@ -274,7 +278,7 @@ async def logs_last_part(db: Session = Depends(get_db)):
 
     processed_result = replace_newlines(result)
 
-    return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(processed_result, ensure_ascii=False, indent=4, default=default_serializer))
 
 @router.get("/x/logs_after/{last_log_id}", operation_id="logs_after_id")
 async def logs_after_id(last_log_id: int, db: Session = Depends(get_db)):
@@ -294,7 +298,7 @@ async def logs_after_id(last_log_id: int, db: Session = Depends(get_db)):
 
     logging.info('Исходные данные из базы данных:')
     for row in dbanswer:
-        logging.info(json.dumps(row, default=default_serializer, indent=4))
+        logging.info(json.dumps(row, ensure_ascii=False, default=default_serializer, indent=4))
 
     unsortedResult = []
     for ans in dbanswer:
@@ -320,7 +324,7 @@ async def logs_after_id(last_log_id: int, db: Session = Depends(get_db)):
 
     processed_result = replace_newlines(result)
 
-    return json.loads(json.dumps(processed_result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(processed_result, ensure_ascii=False, indent=4, default=default_serializer))
 
 @router.get("/x/logs_before/{log_id}", response_model=List[Dict[str, Any]], operation_id="get_logs_before")
 async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
@@ -358,7 +362,7 @@ async def get_logs_before(log_id: int, db: Session = Depends(get_db)):
     result = list(map(sort_result_item, unsortedResult))
 
     # Возвращаем обработанный результат
-    return json.loads(json.dumps(result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(result, ensure_ascii=False, indent=4, default=default_serializer))
 
 @router.get("/x/logs_for_period", response_model=List[Dict[str, Any]], operation_id="get_logs_for_period")
 async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session = Depends(get_db)):
@@ -401,7 +405,7 @@ async def get_logs_for_period(start: str, end: str, lastId: int = 0, db: Session
     result = list(map(sort_result_item, unsortedResult))
 
     # Возвращаем обработанный результат
-    return json.loads(json.dumps(result, indent=4, default=default_serializer))
+    return json.loads(json.dumps(result, ensure_ascii=False, indent=4, default=default_serializer))
 
 from fastapi import Query
 
@@ -439,10 +443,10 @@ async def get_logs_for_ids(
     # Сортируем результат
     result = list(map(sort_result_item, unsortedResult))
 
-    return json.loads(json.dumps(result, indent=4, default=default_serializer)) 
+    return json.loads(json.dumps(result, ensure_ascii=False, indent=4, default=default_serializer)) 
     
 def sort_result_item(item: Dict[str, Any]) -> Dict[str, Any]:
-    mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp','eventId','internalId','number','ticketId']
+    mandatory_keys = ['id', 'ip', 'domain', 'eventName', 'timestamp', 'eventTimestamp','eventId','internalId','number','ticketId','isTriggeredViaApi']
     sorted_item = {key: item.pop(key, 'Not found') for key in mandatory_keys}
     sorted_item.update(dict(sorted(item.items())))
     return sorted_item

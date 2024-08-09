@@ -32,15 +32,16 @@ async def handle_request(request: Request, db: Session, method: str):
             index_file_path = os.path.join(static_files_path, "index.html")
             return FileResponse(index_file_path, media_type="text/html")
 
+        print(json.dumps(bodyObj, ensure_ascii=False))
         # Продолжаем с обработкой логов и пересылкой запроса
         bodyObj = await request.json()
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             httpmethod=method,
-            headers=json.dumps(dict(request.headers), cls=CustomJSONEncoder),
-            body=json.dumps(bodyObj),
+            headers=json.dumps(dict(request.headers), ensure_ascii=False, cls=CustomJSONEncoder),
+            body=json.dumps(bodyObj, ensure_ascii=False),
             path_params=repr(request.path_params),
-            query_params=json.dumps(dict(request.query_params))
+            query_params=json.dumps(dict(request.query_params), ensure_ascii=False)
         )
         db.add(db_logs)
         db.commit()
@@ -53,7 +54,7 @@ async def handle_request(request: Request, db: Session, method: str):
             'ticket_comment_updated'
         ]:
             print('Request received:', str(bodyObj['eventName']))
-            return 'Request received:' + json.dumps(bodyObj)
+            return 'Request received:' + json.dumps(bodyObj, ensure_ascii=False)
 
         else:
             headers_dict = dict(request.headers)
@@ -71,10 +72,10 @@ async def handle_request(request: Request, db: Session, method: str):
                             db_request_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                                 httpmethod=method,
-                                headers=json.dumps(headers_dict, cls=CustomJSONEncoder),
-                                body=json.dumps(bodyObj),
+                                headers=json.dumps(headers_dict, ensure_ascii=False, cls=CustomJSONEncoder),
+                                body=json.dumps(bodyObj, ensure_ascii=False),
                                 path_params=repr(request.path_params),
-                                query_params=json.dumps(dict(request.query_params))
+                                query_params=json.dumps(dict(request.query_params), ensure_ascii=False)
                             )
                             db.add(db_request_logs)
                             db.commit()
@@ -106,10 +107,10 @@ async def handle_request(request: Request, db: Session, method: str):
                             db_response_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                                 httpmethod=method,
-                                headers=json.dumps(dict(external_response.headers), cls=CustomJSONEncoder),
-                                body=json.dumps(response_data),
+                                headers=json.dumps(dict(external_response.headers), ensure_ascii=False, cls=CustomJSONEncoder),
+                                body=json.dumps(response_data, ensure_ascii=False),
                                 path_params=repr(request.path_params),
-                                query_params=json.dumps(dict(request.query_params))
+                                query_params=json.dumps(dict(request.query_params, ensure_ascii=False))
                             )
                             db.add(db_response_logs)
                             db.commit()

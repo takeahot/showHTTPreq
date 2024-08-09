@@ -20,7 +20,7 @@ const MainContent: React.FC = () => {
     const [currentColIndex, setCurrentColIndex] = useState<number | null>(null);
     const [startX, setStartX] = useState<number>(0);
     const [startWidth, setStartWidth] = useState<number>(0);
-    const [refreshInterval, setRefreshInterval] = useState<number>(30);
+    const [refreshInterval, setRefreshInterval] = useState<number>(90);
     const [lastUpdated, setLastUpdated] = useState<string>(''); 
     const [popupContent, setPopupContent] = useState<string | null>(null);
     const [popupPosition, setPopupPosition] = useState<PopupPosition>({ top: 0, left: 0 });
@@ -57,7 +57,7 @@ const MainContent: React.FC = () => {
     }, [viewMode]);
 
     useEffect(() => {
-        if (viewMode === 'logMonitoring') {
+        if (viewMode === 'logMonitoring' && refreshInterval > 0) {
             const intervalId = setInterval(() => {
                 if (logs.length > 0) {
                     const lastLogId = logs[0].id;
