@@ -37,6 +37,38 @@ const MainContent: React.FC = () => {
     const popupRef = useRef<HTMLDivElement | null>(null);
     const isSticky = useRef<boolean>(false);
 
+    // Функция для задания ширины колонок в зависимости от названия
+    const getColumnWidth = (columnName: string) => {
+        switch (columnName) {
+            case 'id':
+                return 50; // ширина для id
+            case 'ip':
+                return 50;
+            case 'domain':
+                return 50;
+            case 'eventName':
+                return 493;
+            case 'timestamp':
+                return 107;
+            case 'eventTimestamp':
+                return 100;
+            case 'eventId':
+                return 150;
+            case 'internalId':
+                return 100;
+            case 'number':
+                return 50;
+            case 'ticketId':
+                return 150;
+            case 'isTriggeredViaApi':
+                return 50; // ширина для isTriggeredViaApi
+            case 'body_json':
+                return 1940;
+            default:
+                return 150; // ширина по умолчанию для всех остальных колонок
+        }
+    };
+
     useEffect(() => {
         if (viewMode === 'logMonitoring') {
             fetch('/x/logs_last_part')
@@ -44,8 +76,11 @@ const MainContent: React.FC = () => {
                 .then(data => {
                     const colKeys = Object.keys(data[0] || {});
                     setColumns(colKeys);
-                    setColWidths(colKeys.map(() => 150)); 
                     
+                    // Устанавливаем ширину колонок на основе их названий
+                    const newColWidths = colKeys.map(columnName => getColumnWidth(columnName));
+                    setColWidths(newColWidths);
+
                     // Удаляем дубликаты и сортируем по убыванию id
                     const uniqueLogs = removeDuplicates(data.slice(1));
                     uniqueLogs.sort((a, b) => b.id - a.id);
@@ -55,6 +90,14 @@ const MainContent: React.FC = () => {
                 });
         }
     }, [viewMode]);
+
+    useEffect(() => {
+        if (logs.length > 0) {
+            // Обновляем ширину колонок при изменении logs
+            const newColWidths = columns.map(columnName => getColumnWidth(columnName));
+            setColWidths(newColWidths);
+        }
+    }, [logs]);
 
     useEffect(() => {
         if (viewMode === 'logMonitoring' && refreshInterval > 0) {
