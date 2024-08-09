@@ -125,41 +125,41 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
 
     print(body)
 
-    if event_name == 'ticket_updated':
-        pass
-    elif event_name == 'ELMA_event_ticket update':
-        if 'body' in item and isinstance(body_json, dict):
-            result.update(add_prefix_to_keys(body_json, 'body'))
-            del item['body']
-        if 'payload' in item and isinstance(item['payload'], dict):
-            result.update(add_prefix_to_keys(item['payload'], 'payload'))
-            del item['payload']
-        second_level_fields = ['headers', 'query_params']
-        result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
-    elif event_name == 'ticket_comment_created':
-        second_level_fields = ['path_params', 'headers']
-    elif event_name == 'ticket_created':
-        if 'body' in item and isinstance(body_json, dict):
-            result.update(add_prefix_to_keys(body_json, 'body'))
-            del item['body']
-        second_level_fields = ['headers', 'query_params']
-        result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
-    elif event_name == 'document_downloaded':
-        if 'body' in item and isinstance(body_json, dict):
-            result.update(add_prefix_to_keys(body_json, 'body'))
-            del item['body']
-        if 'payload' in item and isinstance(item['payload'], dict):
-            result.update(add_prefix_to_keys(item['payload'], 'payload'))
-            del item['payload']
-    else:
-        if 'body' in item and isinstance(body_json, dict):
-            result.update(add_prefix_to_keys(body_json, 'body'))
-            del item['body']
-        if 'payload' in item and isinstance(item['payload'], dict):
-            result.update(add_prefix_to_keys(item['payload'], 'payload'))
-            del item['payload']
+    # if event_name == 'ticket_updated':
+    #     pass
+    # elif event_name == 'ELMA_event_ticket update':
+    #     if 'body' in item and isinstance(body_json, dict):
+    #         result.update(add_prefix_to_keys(body_json, 'body'))
+    #         del item['body']
+    #     if 'payload' in item and isinstance(item['payload'], dict):
+    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
+    #         del item['payload']
+    #     second_level_fields = ['headers', 'query_params']
+    #     result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
+    # elif event_name == 'ticket_comment_created':
+    #     second_level_fields = ['path_params', 'headers']
+    # elif event_name == 'ticket_created':
+    #     if 'body' in item and isinstance(body_json, dict):
+    #         result.update(add_prefix_to_keys(body_json, 'body'))
+    #         del item['body']
+    #     second_level_fields = ['headers', 'query_params']
+    #     result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
+    # elif event_name == 'document_downloaded':
+    #     if 'body' in item and isinstance(body_json, dict):
+    #         result.update(add_prefix_to_keys(body_json, 'body'))
+    #         del item['body']
+    #     if 'payload' in item and isinstance(item['payload'], dict):
+    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
+    #         del item['payload']
+    # else:
+    #     if 'body' in item and isinstance(body_json, dict):
+    #         result.update(add_prefix_to_keys(body_json, 'body'))
+    #         del item['body']
+    #     if 'payload' in item and isinstance(item['payload'], dict):
+    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
+    #         del item['payload']
 
-    logging.info(f'Результат обработки item: {json.dumps(result, ensure_ascii=False, default=json.JSONEncoder().default, indent=4)}')
+    # logging.info(f'Результат обработки item: {json.dumps(result, ensure_ascii=False, default=json.JSONEncoder().default, indent=4)}')
     return result
 
 def add_prefix_to_keys(data: Dict[str, Any], prefix: str) -> Dict[str, Any]:
@@ -246,12 +246,12 @@ async def logs_last_part(db: Session = Depends(get_db)):
     dbanswer = [{col: getattr(row, col) for col in columns} for row in dbanswer]
     
     if not dbanswer:
-        logging.error('Записи не найдены')
+        # logging.error('Записи не найдены')
         raise HTTPException(status_code=404, detail='Logs not found')
 
     logging.info('Исходные данные из базы данных:')
-    for row in dbanswer:
-        logging.info(json.dumps(row, ensure_ascii=False, default=default_serializer, indent=4))
+    # for row in dbanswer:
+        # logging.info(json.dumps(row, ensure_ascii=False, default=default_serializer, indent=4))
 
     unsortedResult = []
     for ans in dbanswer:
@@ -263,7 +263,7 @@ async def logs_last_part(db: Session = Depends(get_db)):
         if '_sa_instance_state' in item:
             del item['_sa_instance_state']
 
-    logging.info(f'Количество преобразованных записей: {len(unsortedResult)}')
+    # logging.info(f'Количество преобразованных записей: {len(unsortedResult)}')
 
     headers = {v: v for v in list(reduce(lambda allKeys, dict: allKeys.union(dict.keys()), unsortedResult, set()))}
     unsortedResult.insert(0, headers)
