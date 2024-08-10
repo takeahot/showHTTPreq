@@ -125,39 +125,39 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
 
     # print(body)
 
-    # if event_name == 'ticket_updated':
-    #     pass
-    # elif event_name == 'ELMA_event_ticket update':
-    #     if 'body' in item and isinstance(body_json, dict):
-    #         result.update(add_prefix_to_keys(body_json, 'body'))
-    #         del item['body']
-    #     if 'payload' in item and isinstance(item['payload'], dict):
-    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
-    #         del item['payload']
-    #     second_level_fields = ['headers', 'query_params']
-    #     result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
-    # elif event_name == 'ticket_comment_created':
-    #     second_level_fields = ['path_params', 'headers']
-    # elif event_name == 'ticket_created':
-    #     if 'body' in item and isinstance(body_json, dict):
-    #         result.update(add_prefix_to_keys(body_json, 'body'))
-    #         del item['body']
-    #     second_level_fields = ['headers', 'query_params']
-    #     result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
-    # elif event_name == 'document_downloaded':
-    #     if 'body' in item and isinstance(body_json, dict):
-    #         result.update(add_prefix_to_keys(body_json, 'body'))
-    #         del item['body']
-    #     if 'payload' in item and isinstance(item['payload'], dict):
-    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
-    #         del item['payload']
-    # else:
-    #     if 'body' in item and isinstance(body_json, dict):
-    #         result.update(add_prefix_to_keys(body_json, 'body'))
-    #         del item['body']
-    #     if 'payload' in item and isinstance(item['payload'], dict):
-    #         result.update(add_prefix_to_keys(item['payload'], 'payload'))
-    #         del item['payload']
+    if event_name == 'ticket_updated':
+        pass
+    elif event_name == 'ELMA_event_ticket update':
+        if 'body' in item and isinstance(body_json, dict):
+            result.update(add_prefix_to_keys(body_json, 'body'))
+            del item['body']
+        if 'payload' in item and isinstance(item['payload'], dict):
+            result.update(add_prefix_to_keys(item['payload'], 'payload'))
+            del item['payload']
+        second_level_fields = ['headers', 'query_params']
+        result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
+    elif event_name == 'ticket_comment_created':
+        second_level_fields = ['path_params', 'headers']
+    elif event_name == 'ticket_created':
+        if 'body' in item and isinstance(body_json, dict):
+            result.update(add_prefix_to_keys(body_json, 'body'))
+            del item['body']
+        second_level_fields = ['headers', 'query_params']
+        result['second_level'] = {key: item[key] for key in second_level_fields if key in item}
+    elif event_name == 'document_downloaded':
+        if 'body' in item and isinstance(body_json, dict):
+            result.update(add_prefix_to_keys(body_json, 'body'))
+            del item['body']
+        if 'payload' in item and isinstance(item['payload'], dict):
+            result.update(add_prefix_to_keys(item['payload'], 'payload'))
+            del item['payload']
+    else:
+        if 'body' in item and isinstance(body_json, dict):
+            result.update(add_prefix_to_keys(body_json, 'body'))
+            del item['body']
+        if 'payload' in item and isinstance(item['payload'], dict):
+            result.update(add_prefix_to_keys(item['payload'], 'payload'))
+            del item['payload']
 
     # logging.info(f'Результат обработки item: {json.dumps(result, ensure_ascii=False, default=json.JSONEncoder().default, indent=4)}')
     return result

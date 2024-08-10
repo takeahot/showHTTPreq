@@ -47,7 +47,7 @@ const MainContent: React.FC = () => {
             case 'domain':
                 return 50;
             case 'eventName':
-                return 493;
+                return 300;
             case 'timestamp':
                 return 107;
             case 'eventTimestamp':
