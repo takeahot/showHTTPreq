@@ -36,7 +36,7 @@ async def log_requests(request: Request, call_next):
 
     # Чтение части тела запроса
     body = await request.body()
-    print(f"Request body: {body[:1000]}")  # Выводим первые 100 символов тела запроса
+    print(f"Request body: {body}")  # Выводим первые 100 символов тела запроса
 
     response = await call_next(request)
     print(f"Response status for {request.url.path}: {response.status_code}")
