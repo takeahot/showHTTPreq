@@ -29,8 +29,10 @@ app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
+    client_ip = request.client.host
     print(f"Handling request for: {request.url}")
     print(f"Request method: {request.method}")
+    print(f"Client IP: {client_ip}")
 
     # Чтение части тела запроса
     body = await request.body()
