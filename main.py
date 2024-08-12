@@ -30,6 +30,12 @@ app.mount("/static", StaticFiles(directory=static_path), name="static")
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     print(f"Handling request for: {request.url}")
+    print(f"Request method: {request.method}")
+
+    # Чтение части тела запроса
+    body = await request.body()
+    print(f"Request body: {body[:100]}")  # Выводим первые 100 символов тела запроса
+
     response = await call_next(request)
     print(f"Response status for {request.url.path}: {response.status_code}")
     return response
