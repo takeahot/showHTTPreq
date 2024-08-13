@@ -27,20 +27,20 @@ print("Path to static ----- ", static_path)
 # Подключаем статические файлы для React приложения
 app.mount("/static", StaticFiles(directory=static_path), name="static")
 
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    client_ip = request.client.host
-    print(f"Handling request for: {request.url}")
-    print(f"Request method: {request.method}")
-    print(f"Client IP: {client_ip}")
+# @app.middleware("http")
+# async def log_requests(request: Request, call_next):
+#     client_ip = request.client.host
+#     print(f"Handling request for: {request.url}")
+#     print(f"Request method: {request.method}")
+#     print(f"Client IP: {client_ip}")
 
-    # Чтение части тела запроса
-    body = await request.body()
-    print(f"Request body: {body}")  # Выводим первые 100 символов тела запроса
+#     # Чтение части тела запроса
+#     body = await request.body()
+#     print(f"Request body: {body}")  # Выводим первые 100 символов тела запроса
 
-    response = await call_next(request)
-    print(f"Response status for {request.url.path}: {response.status_code}")
-    return response
+#     response = await call_next(request)
+#     print(f"Response status for {request.url.path}: {response.status_code}")
+#     return response
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

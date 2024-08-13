@@ -25,6 +25,20 @@ static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."
 
 async def handle_request(request: Request, db: Session, method: str):
     try:
+        # Продолжаем с обработкой логов и пересылкой запроса
+        bodyObj = await Request.json()
+        if hasattr(bodyObj, 'get') and str(bodyObj.get('eventName')) != "None":
+            event_name = bodyObj.get('eventName')
+        else:
+            event_name = ""
+
+        domain = request.headers.get('x-origin-domain')
+        client_ip = request.client.host
+        if client_ip == "52.28.237.77":
+            domain = "CASAVI"
+            
+        print(f"Got request: {client_ip} {domain} {request.method} {request.url} {event_name}")
+
         user_agent = request.headers.get("User-Agent", "").lower()
         
         # Проверка User-Agent и возврат index.html
@@ -32,9 +46,7 @@ async def handle_request(request: Request, db: Session, method: str):
             index_file_path = os.path.join(static_files_path, "index.html")
             return FileResponse(index_file_path, media_type="text/html")
 
-        # Продолжаем с обработкой логов и пересылкой запроса
-        bodyObj = await request.json()
-        # print(json.dumps(bodyObj, ensure_ascii=False))
+       # print(json.dumps(bodyObj, ensure_ascii=False))
         db_logs = models.Logs(
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             httpmethod=method,
