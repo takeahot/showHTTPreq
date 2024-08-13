@@ -47,8 +47,10 @@ def flatDbAnswerItem(item: Dict[str, Any]) -> Dict[str, Any]:
     # Определяем обязательные ключи
     id = item.get('id', 'Not found')
     headers = json.loads(item.get('headers') or '{"x-origin-domain": "Not found domain","x-forwarded-for": "Not found id"}')
-    domain = headers.get('x-origin-domain')
     ip = headers.get('x-forwarded-for')
+    domain = headers.get('x-origin-domain')
+    if not domain and ip == "52.28.237.77":
+        domain = "CASAVI"
     timestamp = item.get('timestamp', 'Not found')
     headers = item.get('headers')
 

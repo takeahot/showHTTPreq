@@ -26,13 +26,16 @@ static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."
 async def handle_request(request: Request, db: Session, method: str):
     try:
         # Продолжаем с обработкой логов и пересылкой запроса
-        bodyObj = await request.json()
-        if hasattr(bodyObj, 'get') and str(bodyObj.get('eventName')) != "None":
+        bodyObj = dict()
+        if request.headers.get("content-length") and int(request.headers.get("content-length")) > 0:
+            bodyObj = await request.json()
+
+        if bodyObj.keys().__len__  and hasattr(bodyObj, 'get') and str(bodyObj.get('eventName')) != "None":
             event_name = bodyObj.get('eventName')
         else:
             event_name = ""
 
-        if hasattr(bodyObj, 'get') and str(bodyObj.get('eventId')) != "None":
+        if bodyObj.keys().__len__ and hasattr(bodyObj, 'get') and str(bodyObj.get('eventId')) != "None":
             event_id = bodyObj.get('eventId')
         else:
             event_id = ""
@@ -45,10 +48,11 @@ async def handle_request(request: Request, db: Session, method: str):
         print(f"Got request: {client_ip} {domain} {request.method} {request.url} {event_name} {event_id}")
 
         user_agent = request.headers.get("User-Agent", "").lower()
-        
+                   
         # Проверка User-Agent и возврат index.html
         if any(browser in user_agent for browser in ALLOWED_BROWSERS):
             index_file_path = os.path.join(static_files_path, "index.html")
+            print ("front")
             return FileResponse(index_file_path, media_type="text/html")
 
        # print(json.dumps(bodyObj, ensure_ascii=False))
@@ -77,6 +81,8 @@ async def handle_request(request: Request, db: Session, method: str):
             headers_dict = dict(request.headers)
             headers_dict.pop('content-length', None)
             headers_dict.pop('host', None)
+            headers_dict["x-forwarded-for"] = "0.0.0.0"
+            headers_dict["x-origin-domain"] = "koyeb"
 
             elma_tail = bodyObj['eventName']
             bodyObj = {**bodyObj, 'eventName': f"{elma_tail}_from_koyeb_to_ELMA"}
@@ -120,6 +126,7 @@ async def handle_request(request: Request, db: Session, method: str):
 
                             response_data['status_code'] = external_response.status_code
                             response_data['eventName'] = bodyObj['eventName'] + "_response"
+                            external_response.headers['x-origin-domain'] = "res <- ELMA"
 
                             db_response_logs = models.Logs(
                                 timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
