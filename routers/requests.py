@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 router = APIRouter()
 
 domains = [
-    # "https://morzhkzdhj3oi.elma365.eu",
+    "https://morzhkzdhj3oi.elma365.eu",
     "https://7isfa26wfvp4a.elma365.eu"
 ]
 
