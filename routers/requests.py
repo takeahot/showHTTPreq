@@ -26,7 +26,7 @@ static_files_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."
 async def handle_request(request: Request, db: Session, method: str):
     try:
         # Продолжаем с обработкой логов и пересылкой запроса
-        bodyObj = await Request.json()
+        bodyObj = await request.json()
         if hasattr(bodyObj, 'get') and str(bodyObj.get('eventName')) != "None":
             event_name = bodyObj.get('eventName')
         else:
@@ -36,7 +36,7 @@ async def handle_request(request: Request, db: Session, method: str):
         client_ip = request.client.host
         if client_ip == "52.28.237.77":
             domain = "CASAVI"
-            
+
         print(f"Got request: {client_ip} {domain} {request.method} {request.url} {event_name}")
 
         user_agent = request.headers.get("User-Agent", "").lower()
