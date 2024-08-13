@@ -32,12 +32,17 @@ async def handle_request(request: Request, db: Session, method: str):
         else:
             event_name = ""
 
+        if hasattr(bodyObj, 'get') and str(bodyObj.get('eventId')) != "None":
+            event_id = bodyObj.get('eventId')
+        else:
+            event_id = ""
+
         domain = request.headers.get('x-origin-domain')
         client_ip = request.client.host
         if client_ip == "52.28.237.77":
             domain = "CASAVI"
 
-        print(f"Got request: {client_ip} {domain} {request.method} {request.url} {event_name}")
+        print(f"Got request: {client_ip} {domain} {request.method} {request.url} {event_name} {event_id}")
 
         user_agent = request.headers.get("User-Agent", "").lower()
         
